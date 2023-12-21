@@ -326,7 +326,7 @@ namespace OpenClinicDataCollection
                 }
                 else
                 {
-                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10000));
+                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
                     _EasyTcpClient.OnDataReceive += Client_OnDataReceive;
                     _EasyTcpClient.OnConnect += _EasyTcpClient_OnConnect;
                     _EasyTcpClient.OnDisconnect += _EasyTcpClient_OnDisconnect;
@@ -484,6 +484,11 @@ namespace OpenClinicDataCollection
 
         private async void button2_Click(object sender, EventArgs e)
         {
+            StartApplication();
+        }
+
+        private async void StartApplication()
+        {
             await StartLoadConfig();
             StartApp();
         }
@@ -496,22 +501,32 @@ namespace OpenClinicDataCollection
 
 
 
-        private void FormMain_Load(object sender, EventArgs e)
+        private async void FormMain_Load(object sender, EventArgs e)
         {
             try
             {
                 string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
+                //
                 System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                 System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
                 this.Text = "OpenClinic Data Collection - assemblyVersion=" + assemblyVersion;
                 LoadConfigLocal();
+                AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
                 AutoUpdater.Start("http://thuanan1.ddns.net/openclinic/download/datacollect.xml");
+                //
+                StartApplication();
+                //
             }
             catch (Exception ex)
             {
                 addLog("ERROR:" + ex.Message);
             }
+        }
+        bool autoUpdater = false;
+        private void AutoUpdater_ApplicationExitEvent()
+        {
+            autoUpdater = true;
+            Application.Exit();
         }
 
         private void LoadConfigLocal()
@@ -567,6 +582,10 @@ namespace OpenClinicDataCollection
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (autoUpdater == true)
+            {
+                return;
+            }
             if (MessageBox.Show("Tắt chương trình sẽ không nhận được dữ liệu từ các máy ?? ", "Confirm close", MessageBoxButtons.OKCancel) != DialogResult.OK)
             {
                 e.Cancel = true;

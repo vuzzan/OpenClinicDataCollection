@@ -47,7 +47,7 @@
             listBox1.Location = new Point(12, 337);
             listBox1.Name = "listBox1";
             listBox1.ScrollAlwaysVisible = true;
-            listBox1.Size = new Size(956, 334);
+            listBox1.Size = new Size(1476, 334);
             listBox1.TabIndex = 0;
             // 
             // button1
@@ -84,11 +84,11 @@
             // 
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column6 });
-            dataGridView1.Location = new Point(12, 68);
+            dataGridView1.Location = new Point(12, 12);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 72;
             dataGridView1.RowTemplate.Height = 37;
-            dataGridView1.Size = new Size(956, 238);
+            dataGridView1.Size = new Size(1476, 319);
             dataGridView1.TabIndex = 4;
             // 
             // Column1
@@ -121,13 +121,13 @@
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(980, 683);
-            Controls.Add(button4);
+            ClientSize = new Size(1500, 683);
             Controls.Add(dataGridView1);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(listBox1);
+            Controls.Add(button4);
             MaximizeBox = false;
             Name = "FormMain";
             Text = "OpenClinic Data Collection 2.1";

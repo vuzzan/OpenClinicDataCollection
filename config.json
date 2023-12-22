@@ -1,23 +1,7 @@
 {
-  "URL": "http://thuanan1.ddns.net:8080/openclinic/app/equipment/index3.php",
+  "HOST": "thuanan1.ddns.net",
+  "URL": "/openclinic/app/equipment/index.php",
+  "AUTOUPDATE": "/openclinic/download/datacollect.xml",
   "LIST": [
-    {
-      "Type": "RS232",
-      "COM": "COM6",
-      "Baudrate": 9600,
-      "Name": "MAY SINH HOA 1"
-    },
-    {
-      "Type": "TCP",
-      "Ip": "127.0.0.1",
-      "Port": "5000",
-      "Name": "MAY SINH HOA 2"
-    },
-    {
-      "Type": "TCP",
-      "Ip": "127.0.0.1",
-      "Port": "6000",
-      "Name": "MAY SINH HOA 3"
-    }
   ]
 }

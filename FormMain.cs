@@ -30,7 +30,9 @@ namespace OpenClinicDataCollection
                 );
         static bool appStop = false;
         static ObservableCollection<MachineData> listMachineData = new ObservableCollection<MachineData>();
+        public string HOSTNAME = "";
         public string PostURL = "";
+        public string AutoUpdateURL = "";
         public FormMain()
         {
             InitializeComponent();
@@ -326,7 +328,8 @@ namespace OpenClinicDataCollection
                 }
                 else
                 {
-                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
+                    //EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
+                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PrefixLengthProtocol());
                     _EasyTcpClient.OnDataReceive += Client_OnDataReceive;
                     _EasyTcpClient.OnConnect += _EasyTcpClient_OnConnect;
                     _EasyTcpClient.OnDisconnect += _EasyTcpClient_OnDisconnect;
@@ -388,7 +391,7 @@ namespace OpenClinicDataCollection
                 if (client.MachineType == "TCP" && client.MachineObject == sender)
                 {
                     result = System.Text.Encoding.UTF8.GetString(e.Data);
-                    if (result.Length < 2)
+                    if (result.Length <= 2)
                     {
                         log.Info("Ping: " + ByteArrayToString(e.Data) + " " + client.ToString());
                         continue;
@@ -512,7 +515,7 @@ namespace OpenClinicDataCollection
                 this.Text = "OpenClinic Data Collection - assemblyVersion=" + assemblyVersion;
                 LoadConfigLocal();
                 AutoUpdater.ApplicationExitEvent += AutoUpdater_ApplicationExitEvent;
-                AutoUpdater.Start("http://thuanan1.ddns.net/openclinic/download/datacollect.xml");
+                AutoUpdater.Start(AutoUpdateURL);
                 //
                 StartApplication();
                 //
@@ -534,7 +537,16 @@ namespace OpenClinicDataCollection
             try
             {
                 JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
+                HOSTNAME = (string)o1.GetValue("HOST");
                 PostURL = (string)o1.GetValue("URL");
+                PostURL = "http://"+HOSTNAME + PostURL;
+                AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
+                AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
+
+                addLog("HOSTNAME: " + HOSTNAME);
+                addLog("PostURL: " + PostURL);
+                addLog("AutoUpdateURL: " + AutoUpdateURL);
+
                 JArray arr1 = (JArray)o1.GetValue("LIST");
                 foreach (JObject obj in arr1)
                 {

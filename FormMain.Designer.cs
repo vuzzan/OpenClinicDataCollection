@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             listBox1 = new ListBox();
             button1 = new Button();
             button2 = new Button();
@@ -36,6 +37,7 @@
             Column1 = new DataGridViewTextBoxColumn();
             Column6 = new DataGridViewTextBoxColumn();
             button4 = new Button();
+            notifyIcon1 = new NotifyIcon(components);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
             // 
@@ -117,6 +119,11 @@
             button4.UseVisualStyleBackColor = true;
             button4.Click += button4_Click_1;
             // 
+            // notifyIcon1
+            // 
+            notifyIcon1.Text = "OpenClinic Data Collection";
+            notifyIcon1.Visible = true;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
@@ -131,6 +138,7 @@
             MaximizeBox = false;
             Name = "FormMain";
             Text = "OpenClinic Data Collection 2.1";
+            MinimumSizeChanged += FormMain_MinimumSizeChanged;
             FormClosing += FormMain_FormClosing;
             Load += FormMain_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
@@ -147,5 +155,6 @@
         private Button button4;
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column6;
+        private NotifyIcon notifyIcon1;
     }
 }

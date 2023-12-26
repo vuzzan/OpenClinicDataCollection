@@ -539,7 +539,7 @@ namespace OpenClinicDataCollection
                 JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
                 HOSTNAME = (string)o1.GetValue("HOST");
                 PostURL = (string)o1.GetValue("URL");
-                PostURL = "http://"+HOSTNAME + PostURL;
+                PostURL = "http://" + HOSTNAME + PostURL;
                 AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
                 AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
 
@@ -646,6 +646,11 @@ namespace OpenClinicDataCollection
                     }
                 }
             }
+        }
+
+        private void FormMain_MinimumSizeChanged(object sender, EventArgs e)
+        {
+            
         }
     }
 }

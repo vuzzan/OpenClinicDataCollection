@@ -36,6 +36,8 @@ namespace OpenClinicDataCollection
         public string MachineBaudrate { get; set; }
         [Browsable(false)]
         public object MachineObject { get; set; }
+        [Browsable(false)]
+        public string StringData { get; set; }
         public string ToString()
         {
             if (MachineType == "TCP")

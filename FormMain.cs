@@ -19,6 +19,7 @@ using System.Collections.ObjectModel;
 using EasyTcp4.ServerUtils;
 using AutoUpdaterDotNET;
 using EasyTcp4.Protocols.Tcp;
+using System.Windows.Markup;
 
 namespace OpenClinicDataCollection
 {
@@ -220,11 +221,12 @@ namespace OpenClinicDataCollection
                                 client.MachineCOM,
                                 Convert.ToInt32(client.MachineBaudrate),
                                 Parity.None, 8, StopBits.One);
-                        _serialPort.Open();
+                        client.StringData = "";
                         _serialPort.DataReceived += _serialPort_DataReceived;
-                        _serialPort.ErrorReceived += _serialPort_ErrorReceived; ;
+                        //_serialPort.ErrorReceived += _serialPort_ErrorReceived; ;
                         _serialPort.PinChanged += _serialPort_PinChanged;
                         _serialPort.Disposed += _serialPort_Disposed;
+                        _serialPort.Open();
                         client.MachineObject = _serialPort;
                         client.MachineStatus = "Connecting";
                         RefreshTable();
@@ -287,6 +289,7 @@ namespace OpenClinicDataCollection
                         {
                             client.MachineStatus = "Disconnected";
                             addLog("Disconnect " + client.ToString());
+                            Thread.Sleep(10000);
                             new Thread(() =>
                             {
                                 RetryConnectMachine(client);
@@ -298,6 +301,7 @@ namespace OpenClinicDataCollection
             }
             catch (Exception ex)
             {
+                addLog("ERROR: " + ex.Message);
 
             }
 
@@ -328,8 +332,8 @@ namespace OpenClinicDataCollection
                 }
                 else
                 {
-                    //EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
-                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PrefixLengthProtocol());
+                    EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
+                    //EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PrefixLengthProtocol());
                     _EasyTcpClient.OnDataReceive += Client_OnDataReceive;
                     _EasyTcpClient.OnConnect += _EasyTcpClient_OnConnect;
                     _EasyTcpClient.OnDisconnect += _EasyTcpClient_OnDisconnect;
@@ -425,6 +429,7 @@ namespace OpenClinicDataCollection
             }
         }
 
+
         private void _serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             foreach (MachineData client in listMachineData)
@@ -434,9 +439,21 @@ namespace OpenClinicDataCollection
                 {
                     try
                     {
-                        SerialPort sp = (SerialPort)sender;
-                        result = sp.ReadExisting();
-                        ReportData(client.MachineCode, client.MachineName, result);
+                        SerialPort _serialPort = (SerialPort)sender;
+                        string line = _serialPort.ReadLine();
+                        addLog("" + line);
+                        client.StringData += line;
+                        if(line.Contains("GLU")==true)
+                        {
+                            addLog("" + client.StringData);
+                            ReportData(client.MachineCode, client.MachineName, client.StringData);
+                            
+                            client.StringData = "";
+                        }
+                        //byte[] data = new byte[_serialPort.BytesToRead];
+                        //_serialPort.Read(data, 0, data.Length);
+                        //addLog("RS232 read: " + ByteArrayToString(data));
+                        //ReportData(client.MachineCode, client.MachineName, result);
                     }
                     catch (Exception ex)
                     {

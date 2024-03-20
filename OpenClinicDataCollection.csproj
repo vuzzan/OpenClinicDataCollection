@@ -9,6 +9,7 @@
     <AssemblyVersion>2.0.20.0</AssemblyVersion>
     <FileVersion>2.0.1.1</FileVersion>
     <PackAsTool>False</PackAsTool>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
 

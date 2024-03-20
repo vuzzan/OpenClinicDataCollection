@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace OpenClinicDataCollection
+namespace HL7.Dotnetcore
 {
     public partial class FormTCPServer : Form
     {
@@ -75,7 +75,7 @@ namespace OpenClinicDataCollection
             addLog(result);
             //string ackMessage = "MSH|^~\\&|SAPP|SFCT|RAPP|RFCT|20080312181835||ADT^A01|0D23ACC3-17CD-4FF4-BE66-AD4A6572079E|P|2.4";
             string ackMessage = "MSH|^~\\&||ACK|";
-            HL7.Dotnetcore.Message message = new HL7.Dotnetcore.Message(result);
+            Message message = new HL7.Dotnetcore.Message(result);
 
             // Parse this message
 

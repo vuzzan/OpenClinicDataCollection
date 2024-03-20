@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HL7.Dotnetcore;
 
 namespace HL7.Dotnetcore
 {
@@ -20,7 +21,7 @@ namespace HL7.Dotnetcore
             {
                 if (_RepetitionList == null)
                     _RepetitionList = new List<Field>();
-                    
+
                 return _RepetitionList;
             }
             set
@@ -31,67 +32,67 @@ namespace HL7.Dotnetcore
 
         protected override void ProcessValue()
         {
-            if (this.IsDelimitersField)  // Special case for the delimiters fields (MSH)
+            if (IsDelimitersField)  // Special case for the delimiters fields (MSH)
             {
-                var subcomponent = new SubComponent(_value, this.Encoding);
+                var subcomponent = new SubComponent(_value, Encoding);
 
-                this.ComponentList = new ComponentCollection();
-                Component component = new Component(this.Encoding, true);
+                ComponentList = new ComponentCollection();
+                Component component = new Component(Encoding, true);
 
                 component.SubComponentList.Add(subcomponent);
 
-                this.ComponentList.Add(component);
+                ComponentList.Add(component);
                 return;
             }
 
-            this.HasRepetitions = _value.Contains(this.Encoding.RepeatDelimiter);
+            HasRepetitions = _value.Contains(Encoding.RepeatDelimiter);
 
-            if (this.HasRepetitions)
+            if (HasRepetitions)
             {
                 _RepetitionList = new List<Field>();
-                List<string> individualFields = MessageHelper.SplitString(_value, this.Encoding.RepeatDelimiter);
+                List<string> individualFields = MessageHelper.SplitString(_value, Encoding.RepeatDelimiter);
 
                 for (int index = 0; index < individualFields.Count; index++)
                 {
-                    Field field = new Field(individualFields[index], this.Encoding);
+                    Field field = new Field(individualFields[index], Encoding);
                     _RepetitionList.Add(field);
                 }
             }
             else
             {
-                List<string> allComponents = MessageHelper.SplitString(_value, this.Encoding.ComponentDelimiter);
+                List<string> allComponents = MessageHelper.SplitString(_value, Encoding.ComponentDelimiter);
 
-                this.ComponentList = new ComponentCollection();
+                ComponentList = new ComponentCollection();
 
                 foreach (string strComponent in allComponents)
                 {
-                    Component component = new Component(this.Encoding);
+                    Component component = new Component(Encoding);
                     component.Value = strComponent;
-                    this.ComponentList.Add(component);
+                    ComponentList.Add(component);
                 }
 
-                this.IsComponentized = this.ComponentList.Count > 1;
+                IsComponentized = ComponentList.Count > 1;
             }
         }
 
         public Field(HL7Encoding encoding)
         {
-            this.ComponentList = new ComponentCollection();
-            this.Encoding = encoding;
+            ComponentList = new ComponentCollection();
+            Encoding = encoding;
         }
 
         public Field(string value, HL7Encoding encoding)
         {
-            this.ComponentList = new ComponentCollection();
-            this.Encoding = encoding;
-            this.Value = value;
+            ComponentList = new ComponentCollection();
+            Encoding = encoding;
+            Value = value;
         }
 
         public bool AddNewComponent(Component com)
         {
             try
             {
-                this.ComponentList.Add(com);
+                ComponentList.Add(com);
                 return true;
             }
             catch (Exception ex)
@@ -104,7 +105,7 @@ namespace HL7.Dotnetcore
         {
             try
             {
-                this.ComponentList.Add(component, position);
+                ComponentList.Add(component, position);
                 return true;
             }
             catch (Exception ex)
@@ -134,7 +135,7 @@ namespace HL7.Dotnetcore
 
         public List<Field> Repetitions()
         {
-            if (this.HasRepetitions)
+            if (HasRepetitions)
             {
                 return RepetitionList;
             }
@@ -143,7 +144,7 @@ namespace HL7.Dotnetcore
 
         public Field Repetitions(int repetitionNumber)
         {
-            if (this.HasRepetitions)
+            if (HasRepetitions)
             {
                 return RepetitionList[repetitionNumber - 1];
             }
@@ -169,14 +170,15 @@ namespace HL7.Dotnetcore
                 throw new HL7Exception("Error removing trailing comonents - " + ex.Message);
             }
         }
-        public void AddRepeatingField(Field field) {
-            if (!this.HasRepetitions) 
+        public void AddRepeatingField(Field field)
+        {
+            if (!HasRepetitions)
             {
                 throw new HL7Exception("Repeating field must have repetions (HasRepetitions = true)");
             }
-            if (_RepetitionList == null) 
+            if (_RepetitionList == null)
             {
-                _RepetitionList = new List<Field>(); 
+                _RepetitionList = new List<Field>();
             }
             _RepetitionList.Add(field);
         }

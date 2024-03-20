@@ -7,77 +7,77 @@ namespace HL7.Dotnetcore
     {
         internal FieldCollection FieldList { get; set; }
         internal int SequenceNo { get; set; }
-                
+
         public string Name { get; set; }
 
         public Segment(HL7Encoding encoding)
         {
-            this.FieldList = new FieldCollection();
-            this.Encoding = encoding;
+            FieldList = new FieldCollection();
+            Encoding = encoding;
         }
 
         public Segment(string name, HL7Encoding encoding)
         {
-            this.FieldList = new FieldCollection();
-            this.Name = name;
-            this.Encoding = encoding;
+            FieldList = new FieldCollection();
+            Name = name;
+            Encoding = encoding;
         }
 
         protected override void ProcessValue()
         {
-            List<string> allFields = MessageHelper.SplitString(_value, this.Encoding.FieldDelimiter);
+            List<string> allFields = MessageHelper.SplitString(_value, Encoding.FieldDelimiter);
 
             allFields.RemoveAt(0);
-            
+
             for (int i = 0; i < allFields.Count; i++)
             {
                 string strField = allFields[i];
-                Field field = new Field(this.Encoding);   
+                Field field = new Field(Encoding);
 
                 if (Name == "MSH" && i == 0)
                     field.IsDelimitersField = true; // special case
 
                 field.Value = strField;
-                this.FieldList.Add(field);
+                FieldList.Add(field);
             }
 
-            if (this.Name == "MSH")
+            if (Name == "MSH")
             {
-                var field1 = new Field(this.Encoding);
+                var field1 = new Field(Encoding);
                 field1.IsDelimitersField = true;
-                field1.Value = this.Encoding.FieldDelimiter.ToString();
+                field1.Value = Encoding.FieldDelimiter.ToString();
 
-                this.FieldList.Insert(0,field1);
+                FieldList.Insert(0, field1);
             }
         }
 
         public Segment DeepCopy()
         {
-            var newSegment = new Segment(this.Name, this.Encoding);
-            newSegment.Value = this.Value; 
+            var newSegment = new Segment(Name, Encoding);
+            newSegment.Value = Value;
 
-            return newSegment;        
+            return newSegment;
         }
 
         public void AddEmptyField()
         {
-            this.AddNewField(string.Empty);
+            AddNewField(string.Empty);
         }
 
         public void AddNewField(string content, int position = -1)
         {
-            this.AddNewField(new Field(content, this.Encoding), position);
+            AddNewField(new Field(content, Encoding), position);
         }
 
         public void AddNewField(string content, bool isDelimiters)
         {
-            var newField = new Field(this.Encoding);
+            var newField = new Field(Encoding);
 
             if (isDelimiters)
                 newField.IsDelimitersField = true; // Prevent decoding
 
             newField.Value = content;
-            this.AddNewField(newField, -1);
+            AddNewField(newField, -1);
         }
 
         public bool AddNewField(Field field, int position = -1)
@@ -86,19 +86,19 @@ namespace HL7.Dotnetcore
             {
                 if (position < 0)
                 {
-                    this.FieldList.Add(field);
+                    FieldList.Add(field);
                 }
-                else 
+                else
                 {
                     position = position - 1;
-                    this.FieldList.Add(field, position);
+                    FieldList.Add(field, position);
                 }
-                
+
                 return true;
             }
             catch (Exception ex)
             {
-                throw new HL7Exception("Unable to add new field in segment " + this.Name + " Error - " + ex.Message);
+                throw new HL7Exception("Unable to add new field in segment " + Name + " Error - " + ex.Message);
             }
         }
 
@@ -108,7 +108,7 @@ namespace HL7.Dotnetcore
 
             try
             {
-                return this.FieldList[position];
+                return FieldList[position];
             }
             catch (Exception ex)
             {
@@ -118,12 +118,12 @@ namespace HL7.Dotnetcore
 
         public List<Field> GetAllFields()
         {
-            return this.FieldList;
+            return FieldList;
         }
 
         public int GetSequenceNo()
         {
-            return this.SequenceNo;
+            return SequenceNo;
         }
     }
 }

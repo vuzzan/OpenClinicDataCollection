@@ -2,7 +2,7 @@ using log4net;
 using log4net.Config;
 using System.Reflection;
 
-namespace OpenClinicDataCollection
+namespace HL7.Dotnetcore
 {
     internal static class Program
     {

@@ -21,7 +21,7 @@ using AutoUpdaterDotNET;
 using EasyTcp4.Protocols.Tcp;
 using System.Windows.Markup;
 
-namespace OpenClinicDataCollection
+namespace HL7.Dotnetcore
 {
     public partial class FormMain : Form
     {
@@ -443,11 +443,11 @@ namespace OpenClinicDataCollection
                         string line = _serialPort.ReadLine();
                         addLog("" + line);
                         client.StringData += line;
-                        if(line.Contains("GLU")==true)
+                        if (line.Contains("GLU") == true)
                         {
                             addLog("" + client.StringData);
                             ReportData(client.MachineCode, client.MachineName, client.StringData);
-                            
+
                             client.StringData = "";
                         }
                         //byte[] data = new byte[_serialPort.BytesToRead];
@@ -667,7 +667,7 @@ namespace OpenClinicDataCollection
 
         private void FormMain_MinimumSizeChanged(object sender, EventArgs e)
         {
-            
+
         }
     }
 }

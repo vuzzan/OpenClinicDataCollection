@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace OpenClinicDataCollection
+namespace HL7.Dotnetcore
 {
     public partial class FormRS232 : Form
     {

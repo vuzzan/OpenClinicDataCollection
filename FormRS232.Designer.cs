@@ -1,4 +1,4 @@
-﻿namespace OpenClinicDataCollection
+﻿namespace HL7.Dotnetcore
 {
     partial class FormRS232
     {

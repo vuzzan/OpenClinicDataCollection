@@ -101,7 +101,7 @@ namespace HL7.Dotnetcore
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            
+
             byte[] data = encoding.GetBytes(message);
             byte[] buffer = new byte[data.Length + 3];
             buffer[0] = 11; // VT

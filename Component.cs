@@ -14,33 +14,33 @@ namespace HL7.Dotnetcore
         public Component(HL7Encoding encoding, bool isDelimiter = false)
         {
             this.isDelimiter = isDelimiter;
-            this.SubComponentList = new List<SubComponent>();
-            this.Encoding = encoding;
+            SubComponentList = new List<SubComponent>();
+            Encoding = encoding;
         }
         public Component(string pValue, HL7Encoding encoding)
         {
-            this.SubComponentList = new List<SubComponent>();
-            this.Encoding = encoding;
-            this.Value = pValue;
+            SubComponentList = new List<SubComponent>();
+            Encoding = encoding;
+            Value = pValue;
         }
 
         protected override void ProcessValue()
         {
             List<string> allSubComponents;
-            
-            if (this.isDelimiter)
-                allSubComponents = new List<string>(new [] {this.Value});
+
+            if (isDelimiter)
+                allSubComponents = new List<string>(new[] { Value });
             else
-                allSubComponents = MessageHelper.SplitString(_value, this.Encoding.SubComponentDelimiter);
+                allSubComponents = MessageHelper.SplitString(_value, Encoding.SubComponentDelimiter);
 
             if (allSubComponents.Count > 1)
-                this.IsSubComponentized = true;
+                IsSubComponentized = true;
 
-            this.SubComponentList = new List<SubComponent>();
+            SubComponentList = new List<SubComponent>();
 
             foreach (string strSubComponent in allSubComponents)
             {
-                SubComponent subComponent = new SubComponent(this.Encoding.Decode(strSubComponent), this.Encoding);
+                SubComponent subComponent = new SubComponent(Encoding.Decode(strSubComponent), Encoding);
                 SubComponentList.Add(subComponent);
             }
         }

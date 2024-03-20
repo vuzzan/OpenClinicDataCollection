@@ -1,4 +1,4 @@
-﻿namespace OpenClinicDataCollection
+﻿namespace HL7.Dotnetcore
 {
     partial class FormMain
     {
@@ -54,7 +54,7 @@
             // 
             // button1
             // 
-            button1.Location = new Point(1089, 12);
+            button1.Location = new Point(1368, 78);
             button1.Name = "button1";
             button1.Size = new Size(92, 50);
             button1.TabIndex = 1;
@@ -74,7 +74,7 @@
             // 
             // button3
             // 
-            button3.Location = new Point(999, 12);
+            button3.Location = new Point(1359, 12);
             button3.Name = "button3";
             button3.Size = new Size(84, 50);
             button3.TabIndex = 3;
@@ -128,7 +128,7 @@
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1500, 683);
+            ClientSize = new Size(1497, 683);
             Controls.Add(dataGridView1);
             Controls.Add(button3);
             Controls.Add(button2);

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenClinicDataCollection
+namespace HL7.Dotnetcore
 {
     public class MachineData
     {

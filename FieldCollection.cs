@@ -10,7 +10,7 @@ namespace HL7.Dotnetcore
             {
                 Field field = null;
 
-                if (index < base.Count)
+                if (index < Count)
                     field = base[index];
 
                 return field;
@@ -37,7 +37,7 @@ namespace HL7.Dotnetcore
         /// <param name="position">position</param>
         internal void Add(Field field, int position)
         {
-            int listCount = base.Count;
+            int listCount = Count;
 
             if (position < listCount)
             {
@@ -50,7 +50,7 @@ namespace HL7.Dotnetcore
                     Field blankField = new Field(string.Empty, field.Encoding);
                     base.Add(blankField);
                 }
-                
+
                 base.Add(field);
             }
         }

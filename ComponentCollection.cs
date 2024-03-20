@@ -13,7 +13,7 @@ namespace HL7.Dotnetcore
             {
                 Component component = null;
 
-                if (index < base.Count)
+                if (index < Count)
                     component = base[index];
 
                 return component;
@@ -40,7 +40,7 @@ namespace HL7.Dotnetcore
         /// <param name="position">Position</param>
         internal void Add(Component component, int position)
         {
-            int listCount = base.Count;
+            int listCount = Count;
             position = position - 1;
 
             if (position < listCount)

@@ -26,44 +26,83 @@ namespace HL7.Dotnetcore
         {
             InitializeComponent();
         }
-        EasyTcpServer server;
+        object server;
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            string[] tmp = textBox1.Text.Split(":");
+            if (tmp.Length == 2)
+            {
+                if (tmp[1].Length > 0 && Convert.ToInt32(tmp[1]) > 100)
+                {
+                    // Active
+                    button1.Text = "Connect";
+
+                }
+                else
+                {
+                    // Active
+                    button1.Text = "Connect";
+
+                }
+            }
+            else
+            {
+                button1.Text = "Listen";
+            }
+        }
         private void button1_Click(object sender, EventArgs e)
         {
-            ushort port = (ushort)Convert.ToUInt64(textBox1.Text);
-            server = new EasyTcpServer(new PlainTcpProtocol());
-            server.OnDataReceive += Server_OnDataReceive;
-            server.OnDisconnect += Server_OnDisconnect;
-            server.OnError += Server_OnError;
-            server.OnConnect += Server_OnConnect;
-            server.OnDataReceiveAsync += Server_OnDataReceiveAsync;
-            server.Start("127.0.0.1", port);
-            //server.OnDataReceive += (sender, message) => log.Info(message.Data);
-            addLog("Server start on listening port: " + port);
+            string[] tmp = textBox1.Text.Split(":");
+            if (tmp.Length == 2 && Convert.ToInt32(tmp[1]) > 100)
+            {
+                EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
+                _EasyTcpClient.OnDataReceive += Server_OnDataReceive;
+                _EasyTcpClient.OnConnect += Server_OnConnect;
+                _EasyTcpClient.OnDisconnect += Server_OnDisconnect;
+
+                if (_EasyTcpClient.Connect(tmp[0].Trim(), (ushort)Convert.ToInt32(tmp[1])) == true)
+                {
+                }
+
+                server = (EasyTcpClient)_EasyTcpClient;
+                addLog("Connect to " + tmp[0].Trim() + ": " + (ushort)Convert.ToInt32(tmp[1]));
+            }
+            else
+            {
+                ushort port = (ushort)Convert.ToUInt64(textBox1.Text);
+                EasyTcpServer obj = new EasyTcpServer(new PlainTcpProtocol(10240));
+                obj.OnDataReceive += Server_OnDataReceive;
+                obj.OnDisconnect += Server_OnDisconnect;
+                obj.OnError += Server_OnError;
+                obj.OnConnect += Server_OnConnect;
+                obj.OnDataReceiveAsync += Server_OnDataReceiveAsync;
+                obj.Start("127.0.0.1", port);
+                addLog("Server start on listening port: " + port);
+
+                server = (EasyTcpServer)obj;
+            }
+
         }
 
         private Task Server_OnDataReceiveAsync(object sender, EasyTcp4.Message message)
         {
-            //string result = System.Text.Encoding.UTF8.GetString(message.Data);
-
-            //addLog("Server_OnDataReceiveAsync: " + result);
             return Task.CompletedTask;
         }
 
         private void Server_OnConnect(object? sender, EasyTcpClient e)
         {
-            EasyTcpServer server = (EasyTcpServer)sender;
-            //e.Send();
-            addLog("Server_OnConnect");
+            addLog("OnConnect");
         }
 
         private void Server_OnError(object? sender, Exception e)
         {
-            addLog("Server_OnError");
+            addLog("OnError");
         }
 
         private void Server_OnDisconnect(object? sender, EasyTcpClient e)
         {
-            addLog("Server_OnDisconnect");
+            addLog("OnDisconnect");
         }
 
         private void Server_OnDataReceive(object? sender, EasyTcp4.Message e)
@@ -71,7 +110,7 @@ namespace HL7.Dotnetcore
             //(sender, message) => addLog(message.Data);
             string result = System.Text.Encoding.UTF8.GetString(e.Data);
             // Remove First and end chracter
-            result = result.Substring(1, result.Length-3);
+            result = result.Substring(1, result.Length - 3);
             addLog(result);
             //string ackMessage = "MSH|^~\\&|SAPP|SFCT|RAPP|RFCT|20080312181835||ADT^A01|0D23ACC3-17CD-4FF4-BE66-AD4A6572079E|P|2.4";
             string ackMessage = "MSH|^~\\&||ACK|";
@@ -93,17 +132,36 @@ namespace HL7.Dotnetcore
             ackMessage = message.GetACK().SerializeMessage(false);
             log.Info("Send ACK: " + ackMessage);
             ackMessage = ((char)11).ToString() + ackMessage + ((char)28).ToString() + ((char)13).ToString();
-            
+
             byte[] ackMessageBytes = Encoding.UTF8.GetBytes(ackMessage);
-            EasyTcpServer client = (EasyTcpServer) sender;
-            client.SendAll(ackMessageBytes);
+            //
+            if (server != null && server.GetType() == typeof(EasyTcpServer))
+            {
+                EasyTcpServer client = (EasyTcpServer)server;
+                client.SendAll(ackMessageBytes);
+            }
+            else if (server != null && server.GetType() == typeof(EasyTcpClient))
+            {
+                EasyTcpClient client = (EasyTcpClient)server;
+                client.Send(ackMessageBytes);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            if (server != null && server.GetType() == typeof(EasyTcpServer))
+            {
+                EasyTcpServer client = (EasyTcpServer)server;
+                client.SendAll(textBox2.Text.ToString());
+                addLog("Send " + textBox2.Text);
+            }
+            else if (server != null && server.GetType() == typeof(EasyTcpClient))
+            {
+                EasyTcpClient client = (EasyTcpClient)server;
+                client.Send(textBox2.Text.ToString());
+                addLog("Send " + textBox2.Text);
+            }
 
-            server.SendAll(textBox2.Text.ToString());
-            addLog("Send " + textBox2.Text);
         }
 
         private void addLog(string msg)
@@ -138,8 +196,19 @@ namespace HL7.Dotnetcore
         {
             if (server != null)
             {
-                server.Dispose();
+                if (server != null && server.GetType() == typeof(EasyTcpServer))
+                {
+                    EasyTcpServer client = (EasyTcpServer)server;
+                    client.Dispose();
+                }
+                else if (server != null && server.GetType() == typeof(EasyTcpClient))
+                {
+                    EasyTcpClient client = (EasyTcpClient)server;
+                    client.Dispose();
+                }
             }
         }
+
+
     }
 }

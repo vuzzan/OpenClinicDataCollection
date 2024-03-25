@@ -27,6 +27,8 @@ namespace HL7.Dotnetcore
         public string MachineStatus { get; set; }
         public MachineData() { }
         [Browsable(false)]
+        public string DataEndLine { get; set; }
+        [Browsable(false)]
         public string MachineIP { get; set; }
         [Browsable(false)]
         public string MachinePort { get; set; }
@@ -42,11 +44,11 @@ namespace HL7.Dotnetcore
         {
             if (MachineType == "TCP")
             {
-                return "[" + MachineCode + "] [" + MachineName + "] [" + MachineIP + ":" + MachinePort + "]";
+                return "[" + MachineCode + "] [" + MachineName + "] [" + MachineIP + ":" + MachinePort + "] ";
             }
             else
             {
-                return "[" + MachineCode + "] [" + MachineName + "] [" + MachineCOM + ":" + MachineBaudrate + "]";
+                return "[" + MachineCode + "] [" + MachineName + "] [" + MachineCOM + ":" + MachineBaudrate + "] End="  + DataEndLine;
             }
         }
     }

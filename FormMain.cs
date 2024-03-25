@@ -20,6 +20,13 @@ using EasyTcp4.ServerUtils;
 using AutoUpdaterDotNET;
 using EasyTcp4.Protocols.Tcp;
 using System.Windows.Markup;
+using System.Windows.Interop;
+using System.Reflection.PortableExecutable;
+using System.Data.SQLite;
+using System.Xml;
+using System.Security.Cryptography;
+using System.Data;
+using System;
 
 namespace HL7.Dotnetcore
 {
@@ -33,14 +40,105 @@ namespace HL7.Dotnetcore
         static ObservableCollection<MachineData> listMachineData = new ObservableCollection<MachineData>();
         public string HOSTNAME = "";
         public string PostURL = "";
+        public bool ISLOCAL = false;
         public string AutoUpdateURL = "";
+
+
+
+
         public FormMain()
         {
             InitializeComponent();
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
         }
+        private void LoadConfigLocal()
+        {
+            try
+            {
+                CreateTable();
 
+                JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
+                HOSTNAME = (string)o1.GetValue("HOST");
+                PostURL = (string)o1.GetValue("URL");
+                PostURL = "http://" + HOSTNAME + PostURL;
+                AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
+                AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
+
+                JToken isLocal;
+                if (o1.TryGetValue("ISLOCAL", out isLocal))
+                {
+                    ISLOCAL = (bool)o1.GetValue("ISLOCAL");
+
+                }
+
+                addLog("HOSTNAME: " + HOSTNAME);
+                addLog("PostURL: " + PostURL);
+                addLog("AutoUpdateURL: " + AutoUpdateURL);
+
+                JArray arr1 = (JArray)o1.GetValue("LIST");
+                foreach (JObject obj in arr1)
+                {
+                    string MAC_CODE = (string)obj.GetValue("MAC_CODE");
+                    string MAC_NAME = (string)obj.GetValue("MAC_NAME");
+                    string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
+                    string MAC_ENDLINE = (string)obj.GetValue("MAC_ENDLINE");
+
+                    string[] tmp = MAC_CONNECT.Split("|");
+                    if (tmp.Length >= 1)
+                    {
+                        if (MAC_CONNECT.ToUpper().IndexOf("COM") > -1)
+                        {
+                            MachineData dta = new MachineData()
+                            {
+                                MachineCode = MAC_CODE,
+                                MachineName = MAC_NAME,
+                                MachineType = "RS232",
+                                MachineCOM = tmp[0].ToUpper(),
+                                MachineBaudrate = (tmp.Length > 1) ? tmp[1].ToUpper() : "9600",
+                                MachineObject = null,
+                                DataEndLine = MAC_ENDLINE
+                            };
+                            listMachineData.Add(dta);
+                            addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                        }
+                        else
+                        {
+                            MachineData tcp = new MachineData()
+                            {
+                                MachineCode = MAC_CODE,
+                                MachineName = MAC_NAME,
+                                MachineType = "TCP",
+                                MachineIP = tmp[0].ToUpper(),
+                                MachinePort = tmp[1].ToUpper(),
+                                MachineBaudrate = tmp[2].ToUpper(),
+                                MachineObject = null,
+                                DataEndLine = MAC_ENDLINE
+                            };
+                            if (tcp.MachineBaudrate == "PASSIVE")
+                            {
+                                tcp.MachineIP = "0.0.0.0";
+                            }
+                            if (Convert.ToInt32(tcp.MachinePort) <= 10)
+                            {
+                                tcp.MachinePort = "5000";
+                            }
+                            listMachineData.Add(tcp);
+                            addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                        }
+                    }
+                    else
+                    {
+                        addLog("ERROR: Data machine not correct: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                addLog("ERROR:" + ex.Message);
+            }
+        }
         private async Task<bool> StartLoadConfig()
         {
             foreach (MachineData client in listMachineData)
@@ -74,85 +172,108 @@ namespace HL7.Dotnetcore
 
                 }
             }
-            addLog("Start App-Load - Clear");
-            listMachineData.Clear();
 
-            addLog("Start App-Load Config");
-            try
+            if (ISLOCAL == false)
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-                var response = await client.GetAsync(PostURL + "?f=list");
-                if (response.IsSuccessStatusCode)
+                addLog("Start App-Load - Clear");
+                listMachineData.Clear();
+
+                addLog("Start load config from remote..." + PostURL);
+                try
                 {
-                    var resultText = await response.Content.ReadAsStringAsync();
-                    addLog("Get data done to from server. Data Length: " + resultText.Length);
-                    addLog(resultText);
-                    try
+                    using var client = new HttpClient();
+                    client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                    var response = await client.GetAsync(PostURL + "?f=list");
+                    if (response.IsSuccessStatusCode)
                     {
-                        addLog("Parse list machine");
-                        JObject o1 = JObject.Parse(resultText);
-                        JArray arr1 = (JArray)o1.GetValue("machine");
-                        foreach (JObject obj in arr1)
+                        var resultText = await response.Content.ReadAsStringAsync();
+                        addLog("Get data done to from server. Data Length: " + resultText.Length);
+                        addLog(resultText);
+                        try
                         {
-                            string MAC_CODE = (string)obj.GetValue("MAC_CODE");
-                            string MAC_NAME = (string)obj.GetValue("MAC_NAME");
-                            string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
-                            string[] tmp = MAC_CONNECT.Split("|");
-                            if (tmp.Length > 1)
+                            addLog("Parse list machine");
+                            JObject o1 = JObject.Parse(resultText);
+                            JArray arr1 = (JArray)o1.GetValue("machine");
+                            foreach (JObject obj in arr1)
                             {
-                                if (MAC_CONNECT.ToUpper().IndexOf("COM") > -1)
+                                string MAC_CODE = (string)obj.GetValue("MAC_CODE");
+                                string MAC_NAME = (string)obj.GetValue("MAC_NAME");
+                                string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
+                                string MAC_ENDLINE = (string)obj.GetValue("MAC_ENDLINE");
+                                string[] tmp = MAC_CONNECT.Split("|");
+                                if (tmp.Length > 1)
                                 {
-                                    listMachineData.Add(new MachineData()
+                                    if (MAC_CONNECT.ToUpper().IndexOf("COM") > -1)
                                     {
-                                        MachineCode = MAC_CODE,
-                                        MachineName = MAC_NAME,
-                                        MachineType = "RS232",
-                                        MachineCOM = tmp[0].ToUpper(),
-                                        MachineBaudrate = tmp[1].ToUpper(),
-                                        MachineObject = null
-                                    });
-                                    addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                                        listMachineData.Add(new MachineData()
+                                        {
+                                            MachineCode = MAC_CODE,
+                                            MachineName = MAC_NAME,
+                                            MachineType = "RS232",
+                                            MachineCOM = tmp[0].ToUpper(),
+                                            MachineBaudrate = tmp[1].ToUpper(),
+                                            MachineObject = null,
+                                            DataEndLine = MAC_ENDLINE
+                                        });
+                                        addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                                    }
+                                    else
+                                    {
+                                        // TCP
+                                        MachineData tcp = new MachineData()
+                                        {
+                                            MachineCode = MAC_CODE,
+                                            MachineName = MAC_NAME,
+                                            MachineType = "TCP",
+                                            MachineIP = tmp[0].ToUpper(),
+                                            MachinePort = tmp[1].ToUpper(),
+                                            MachineBaudrate = tmp[2].ToUpper(),
+                                            MachineObject = null,
+                                            DataEndLine = MAC_ENDLINE
+                                        };
+                                        if (tcp.MachineBaudrate == "PASSIVE")
+                                        {
+                                            tcp.MachineIP = "0.0.0.0";
+                                        }
+                                        if (Convert.ToInt32(tcp.MachinePort) <= 10)
+                                        {
+                                            tcp.MachinePort = "5000";
+                                        }
+                                        listMachineData.Add(tcp);
+                                        addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                                    }
                                 }
                                 else
                                 {
-                                    listMachineData.Add(new MachineData()
-                                    {
-                                        MachineCode = MAC_CODE,
-                                        MachineName = MAC_NAME,
-                                        MachineType = "TCP",
-                                        MachineIP = tmp[0].ToUpper(),
-                                        MachinePort = tmp[1].ToUpper(),
-                                        MachineBaudrate = tmp[2].ToUpper(),
-                                        MachineObject = null
-                                    });
-                                    addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                                    addLog("ERROR: Data machine not correct: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
                                 }
                             }
-                            else
-                            {
-                                addLog("ERROR: Data machine not correct: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
-                            }
-                        }
 
-                        RefreshTable();
-                        return true;
+                            RefreshTable();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            addLog("ERROR GET DATA FROM REMOTE: " + ex.Message);
+                            return false;
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        addLog("ERROR GET DATA FROM REMOTE: " + ex.Message);
+                        addLog($"Failed with status code {response.StatusCode}");
                         return false;
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    addLog($"Failed with status code {response.StatusCode}");
-                    return false;
+                    addLog("Report Data: " + ex.Message);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                addLog("Report Data: " + ex.Message);
+                RefreshTable();
+                return true;
+                addLog("Config from local.");
             }
             return false;
         }
@@ -162,7 +283,6 @@ namespace HL7.Dotnetcore
             if (InvokeRequired)
             {
                 this.Invoke(new Action<string>(RefreshTable), new object[] { msg });
-                //_ = this.Invoke(new Action<bool>(RefreshTable), new object[] { msg });
             }
             else
             {
@@ -203,6 +323,7 @@ namespace HL7.Dotnetcore
 
         private void StartApp()
         {
+            tabControl1.SelectedIndex = 1;
             addLog("Connect machine ...");
             foreach (MachineData client in listMachineData)
             {
@@ -234,6 +355,7 @@ namespace HL7.Dotnetcore
                     }
                     catch (Exception ex)
                     {
+                        client.MachineStatus = "ERROR: " + ex.Message;
                         addLog("ERROR: Connect RS232: " + client.ToString() + " " + ex.Message);
                     }
 
@@ -320,20 +442,19 @@ namespace HL7.Dotnetcore
                 if (client.MachineBaudrate == "PASSIVE")
                 {
                     // Open listening
-                    EasyTcpServer _EasyTcpServer = new EasyTcpServer(new PlainTcpProtocol());
+                    EasyTcpServer _EasyTcpServer = new EasyTcpServer(new PlainTcpProtocol(10240));
                     _EasyTcpServer.OnDataReceive += _EasyTcpServer_OnDataReceive; ;
                     _EasyTcpServer.OnConnect += _EasyTcpClient_OnConnect;
                     _EasyTcpServer.OnDisconnect += _EasyTcpServer_OnDisconnect; ;
                     _EasyTcpServer.Start(client.MachineIP, (ushort)Convert.ToInt32(client.MachinePort));
                     client.MachineObject = _EasyTcpServer;
-                    client.MachineStatus = "Connecting";
+                    client.MachineStatus = "Listen " + client.MachinePort + "...";
                     RefreshTable();
                     break;
                 }
                 else
                 {
                     EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PlainTcpProtocol(10240));
-                    //EasyTcpClient _EasyTcpClient = new EasyTcpClient(new PrefixLengthProtocol());
                     _EasyTcpClient.OnDataReceive += Client_OnDataReceive;
                     _EasyTcpClient.OnConnect += _EasyTcpClient_OnConnect;
                     _EasyTcpClient.OnDisconnect += _EasyTcpClient_OnDisconnect;
@@ -364,12 +485,48 @@ namespace HL7.Dotnetcore
         }
         private void _EasyTcpServer_OnDataReceive(object? sender, EasyTcp4.Message e)
         {
-            addLog("_EasyTcpServer_OnDataReceive " + ByteArrayToString(e.Data));
+            foreach (MachineData client in listMachineData)
+            {
+                string result = "";
+                if (client.MachineType == "TCP" && client.MachineObject == sender)
+                {
+                    result = System.Text.Encoding.UTF8.GetString(e.Data);
+                    if (result.Length <= 2)
+                    {
+                        log.Info("Ping: " + ByteArrayToString(e.Data) + " " + client.ToString());
+                        continue;
+                    }
+                    //////////////////////////////////////////////////
+                    ///// Remove First and end chracter
+                    result = result.Substring(1, result.Length - 3);
+                    addLog(result);
+                    ReportData(client.MachineCode, client.MachineName, result);
+                }
+            }
         }
 
         private void _EasyTcpServer_OnDisconnect(object? sender, EasyTcpClient e)
         {
-            _EasyTcpClient_OnDisconnect(sender, e);
+            try
+            {
+                if (listMachineData.Count > 0)
+                {
+                    foreach (MachineData client in listMachineData)
+                    {
+                        if (client.MachineType == "TCP" && client.MachineObject == sender)
+                        {
+                            addLog(">>>> Client disconnected: " + client.ToString());
+                            client.MachineStatus = "Listen...";
+                            RefreshTable();
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                addLog("ERROR: " + ex.Message);
+            }
         }
 
         private void _EasyTcpClient_OnConnect(object? sender, EasyTcpClient e)
@@ -443,9 +600,14 @@ namespace HL7.Dotnetcore
                         string line = _serialPort.ReadLine();
                         addLog("" + line);
                         client.StringData += line;
-                        if (line.Contains("GLU") == true)
+                        if (client.DataEndLine == null)
                         {
-                            addLog("" + client.StringData);
+                            // Default
+                            client.DataEndLine = "GLU";
+                        }
+                        if (line.Contains(client.DataEndLine) == true)
+                        {
+                            addLog(" " + client.StringData);
                             ReportData(client.MachineCode, client.MachineName, client.StringData);
 
                             client.StringData = "";
@@ -463,16 +625,22 @@ namespace HL7.Dotnetcore
             }
         }
 
-        private async Task<bool> ReportData(string machineCode, string machineName, string result)
+        private async Task<bool> ReportData(string machineCode, string machineName, string result, bool saveTable = true)
         {
             try
             {
+                if (saveTable == true)
+                {
+                    SaveTable(machineCode, machineName, result);
+                }
+
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                 var parameters = new Dictionary<string, string>();
                 parameters.Add("machineCode", machineCode);
                 parameters.Add("machineName", machineName);
                 parameters.Add("result", result);
+                parameters.Add("repost", saveTable.ToString());
                 parameters.Add("Content-Type", "application/x-www-form-urlencoded");
                 HttpContent content = new FormUrlEncodedContent(parameters);
                 var response = await client.PostAsync(PostURL, content);
@@ -549,64 +717,11 @@ namespace HL7.Dotnetcore
             Application.Exit();
         }
 
-        private void LoadConfigLocal()
-        {
-            try
-            {
-                JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
-                HOSTNAME = (string)o1.GetValue("HOST");
-                PostURL = (string)o1.GetValue("URL");
-                PostURL = "http://" + HOSTNAME + PostURL;
-                AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
-                AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
 
-                addLog("HOSTNAME: " + HOSTNAME);
-                addLog("PostURL: " + PostURL);
-                addLog("AutoUpdateURL: " + AutoUpdateURL);
-
-                JArray arr1 = (JArray)o1.GetValue("LIST");
-                foreach (JObject obj in arr1)
-                {
-                    string MachineName = (string)obj.GetValue("Name");
-                    string Type = (string)obj.GetValue("Type");
-                    if (Type == "TCP")
-                    {
-                        //string Port = (string)obj.GetValue("Port");
-                        // TCP PORT
-                        listMachineData.Add(new MachineData()
-                        {
-                            MachineName = MachineName,
-                            MachineType = Type,
-                            MachineIP = (string)obj.GetValue("Ip"),
-                            MachinePort = (string)obj.GetValue("Port"),
-                            MachineObject = new EasyTcpClient()
-                        });
-                    }
-                    else
-                    {
-                        string MachineCOM = (string)obj.GetValue("COM");
-                        string MachineBaudrate = (string)obj.GetValue("Baudrate");
-                        // COM PORT
-                        listMachineData.Add(new MachineData()
-                        {
-                            MachineName = MachineName,
-                            MachineType = Type,
-                            MachineCOM = MachineCOM,
-                            MachineBaudrate = MachineBaudrate,
-                            MachineObject = null
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                addLog("ERROR:" + ex.Message);
-            }
-        }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            ReportData("Code", "NEO TEST", "DATA TEST POST");
+            //ReportData("Code", "NEO TEST", "DATA TEST POST");
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -621,7 +736,68 @@ namespace HL7.Dotnetcore
             }
             else
             {
+                // Close connection
+                CloseConnection();
+                //
                 appStop = true;
+            }
+        }
+
+        private void CloseConnection()
+        {
+            try
+            {
+                foreach (MachineData client in listMachineData)
+                {
+                    string result = "";
+                    if (client.MachineType == "RS232")
+                    {
+                        try
+                        {
+                            SerialPort sp = (SerialPort)client.MachineObject;
+                            if (sp != null)
+                            {
+                                sp.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            addLog("ERROR RS232 Close: " + ex.Message);
+                        }
+                    }
+                    else if (client.MachineType == "TCP")
+                    {
+                        try
+                        {
+                            if (client.MachineBaudrate == "PASSIVE")
+                            {
+                                EasyTcpServer sp = (EasyTcpServer)client.MachineObject;
+                                if (sp != null)
+                                {
+                                    sp.Dispose();
+                                }
+                                log.Info("Close TCP passive. Close port " + client.ToString());
+                            }
+                            else
+                            {
+                                EasyTcpClient sp = (EasyTcpClient)client.MachineObject;
+                                if (sp != null)
+                                {
+                                    sp.Dispose();
+                                }
+                                log.Info("Close TCP. " + client.ToString());
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            addLog("ERROR TCP Dispose: " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                addLog("ERROR RS232 read: " + ex.Message);
             }
         }
 
@@ -668,6 +844,177 @@ namespace HL7.Dotnetcore
         private void FormMain_MinimumSizeChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        static void SaveTable(MachineData mac, String data)
+        {
+            SaveTable(mac.MachineCode, mac.MachineName, data);
+        }
+        static void SaveTable(string code, string name, String data)
+        {
+            using (var connection = new SQLiteConnection("Data Source=hello.db"))
+            {
+                connection.Open();
+                try
+                {
+                    //data = data.Replace("\n", "<br>").Replace("\'", "''").Replace("\"", "\"\"");
+                    data = data.Replace("\'", "''").Replace("\"", "\"\"");
+                    Console.WriteLine(connection.AutoCommit);
+                    var command = connection.CreateCommand();
+                    command.CommandText =
+                    @"insert into machine_data (MAC_NAME,MAC_CODE,MAC_DATA,MAC_TIME) values(" +
+                    "'" + name + "','" + code + "'," +
+                    "'" + data + "',datetime('now', 'localtime'))";
+                    command.ExecuteNonQuery();
+                    log.Info("Write db done");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+                connection.Close();
+            }
+
+
+        }
+        static void CreateTable()
+        {
+            using (var connection = new SQLiteConnection("Data Source=hello.db"))
+            {
+                connection.Open();
+                try
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText =
+                    @"CREATE TABLE IF NOT EXISTS machine_data (
+	""id""	INTEGER,
+	""MAC_CODE""	TEXT,
+	""MAC_NAME""	TEXT,
+	""MAC_DATA""	TEXT,
+	""MAC_TIME""	TEXT,
+	PRIMARY KEY(""id"" AUTOINCREMENT)
+);";
+                    command.ExecuteNonQuery();
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+            }
+
+
+        }
+
+        private void dataGridView1_SizeChanged(object sender, EventArgs e)
+        {
+
+
+        }
+
+        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            var rowsCount = dataGridView1.SelectedRows.Count;
+            if (rowsCount == 0 || rowsCount > 1) return;
+
+            var row = dataGridView1.SelectedRows[0];
+            if (row == null) return;
+            // Select data from grid 2
+            string machinecode = row.Cells[0].Value.ToString();
+            tabControl1.SelectedIndex = 0;
+            GridDataSellect(machinecode);
+        }
+
+        private void GridDataSellect(string? machinecode)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+                table.Columns.Add("Time", typeof(string));
+                table.Columns.Add("Code", typeof(string));
+                table.Columns.Add("Name", typeof(string));
+                table.Columns.Add("Value", typeof(string));
+
+                using (var connection = new SQLiteConnection("Data Source=hello.db"))
+                {
+                    connection.Open();
+                    using (SQLiteCommand fmd = connection.CreateCommand())
+                    {
+                        fmd.CommandText = @"SELECT * FROM machine_data order by id desc";
+                        SQLiteDataReader r = fmd.ExecuteReader();
+                        while (r.Read())
+                        {
+
+
+                            string MAC_CODE = (string)r["MAC_CODE"];
+                            string MAC_NAME = (string)r["MAC_NAME"];
+                            string MAC_DATA = (string)r["MAC_DATA"];
+                            string MAC_TIME = (string)r["MAC_TIME"];
+
+                            table.Rows.Add(MAC_TIME, MAC_CODE, MAC_NAME, MAC_DATA);
+
+                        }
+
+                        connection.Close();
+                    }
+
+                }
+                // Update view
+                dataGridView2.DataSource = table;
+
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            var rowsCount = dataGridView2.SelectedRows.Count;
+            if (rowsCount == 0 || rowsCount > 1) return;
+            var row = dataGridView2.SelectedRows[0];
+            if (row == null)
+            {
+                return;
+            }
+            // Select data from grid 2
+            string machinetime = row.Cells[0].Value.ToString();
+            string machinecode = row.Cells[1].Value.ToString();
+            string machinename = row.Cells[2].Value.ToString();
+            string machinedata = row.Cells[3].Value.ToString();
+            ReportData(machinecode, machinename, machinedata, false);
+            //
+        }
+
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void dataGridView2_SelectionChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView2_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            var rowsCount = dataGridView2.SelectedRows.Count;
+            if (rowsCount == 0 || rowsCount > 1) return;
+            var row = dataGridView2.SelectedRows[0];
+            if (row == null)
+            {
+                return;
+            }
+            string machinedata = row.Cells[3].Value.ToString();
+            MessageBox.Show(machinedata);
         }
     }
 }

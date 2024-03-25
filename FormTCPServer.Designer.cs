@@ -37,9 +37,9 @@
             // 
             // button1
             // 
-            button1.Location = new Point(134, 13);
+            button1.Location = new Point(233, 12);
             button1.Name = "button1";
-            button1.Size = new Size(122, 36);
+            button1.Size = new Size(128, 36);
             button1.TabIndex = 0;
             button1.Text = "Listen";
             button1.UseVisualStyleBackColor = true;
@@ -68,9 +68,10 @@
             // 
             textBox1.Location = new Point(12, 13);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(116, 35);
+            textBox1.Size = new Size(215, 35);
             textBox1.TabIndex = 4;
-            textBox1.Text = "5100";
+            textBox1.Text = "127.0.0.1:5100";
+            textBox1.TextChanged += textBox1_TextChanged;
             // 
             // textBox2
             // 
@@ -85,7 +86,7 @@
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(793, 450);
             Controls.Add(textBox2);
             Controls.Add(textBox1);
             Controls.Add(listBox1);

@@ -9,6 +9,7 @@ namespace HL7.Dotnetcore
 {
     public class MachineData
     {
+        public string App_ID { get; set; }
         public string MachineCode { get; set; }
         public string MachineName { get; set; }
         public string MachineType { get; set; }

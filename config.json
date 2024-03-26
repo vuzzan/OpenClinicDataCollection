@@ -5,15 +5,17 @@
   "ISLOCAL": true,
   "LIST": [
     {
+      "APP_ID": "1",
       "MAC_CODE": "HH.3.49172.000002",
       "MAC_NAME": "M\u00e1y Huy\u1ebft H\u1ecdc-BC20S-TCP",
       "MAC_CONNECT": "192.168.1.249|5100|PASSIVE",
       "MAC_ENDLINE": null
     },
     {
+      "APP_ID": "2",
       "MAC_CODE": "NT.3.49172.000004",
       "MAC_NAME": "M\u00e1y N\u01b0\u1edbc ti\u1ec3u-UA66-Rs232",
-      "MAC_CONNECT": "COM7",
+      "MAC_CONNECT": "COM3",
       "MAC_ENDLINE": ""
     }
   ]

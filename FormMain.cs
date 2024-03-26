@@ -27,6 +27,11 @@ using System.Xml;
 using System.Security.Cryptography;
 using System.Data;
 using System;
+using System.Text.Json;
+using OpenClinicDataCollection;
+using System.Data.Entity;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace HL7.Dotnetcore
 {
@@ -40,6 +45,7 @@ namespace HL7.Dotnetcore
         static ObservableCollection<MachineData> listMachineData = new ObservableCollection<MachineData>();
         public string HOSTNAME = "";
         public string PostURL = "";
+        public string APP_ID = "";
         public bool ISLOCAL = false;
         public string AutoUpdateURL = "";
 
@@ -60,6 +66,7 @@ namespace HL7.Dotnetcore
 
                 JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
                 HOSTNAME = (string)o1.GetValue("HOST");
+                HOSTNAME = (string)o1.GetValue("HOST");
                 PostURL = (string)o1.GetValue("URL");
                 PostURL = "http://" + HOSTNAME + PostURL;
                 AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
@@ -79,10 +86,12 @@ namespace HL7.Dotnetcore
                 JArray arr1 = (JArray)o1.GetValue("LIST");
                 foreach (JObject obj in arr1)
                 {
+                    string APP_ID = (string)obj.GetValue("APP_ID");
                     string MAC_CODE = (string)obj.GetValue("MAC_CODE");
                     string MAC_NAME = (string)obj.GetValue("MAC_NAME");
                     string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
                     string MAC_ENDLINE = (string)obj.GetValue("MAC_ENDLINE");
+                    
 
                     string[] tmp = MAC_CONNECT.Split("|");
                     if (tmp.Length >= 1)
@@ -91,6 +100,7 @@ namespace HL7.Dotnetcore
                         {
                             MachineData dta = new MachineData()
                             {
+                                App_ID = APP_ID,
                                 MachineCode = MAC_CODE,
                                 MachineName = MAC_NAME,
                                 MachineType = "RS232",
@@ -106,6 +116,7 @@ namespace HL7.Dotnetcore
                         {
                             MachineData tcp = new MachineData()
                             {
+                                App_ID = APP_ID,
                                 MachineCode = MAC_CODE,
                                 MachineName = MAC_NAME,
                                 MachineType = "TCP",
@@ -500,7 +511,7 @@ namespace HL7.Dotnetcore
                     ///// Remove First and end chracter
                     result = result.Substring(1, result.Length - 3);
                     addLog(result);
-                    ReportData(client.MachineCode, client.MachineName, result);
+                    ReportData(client.App_ID,client.MachineCode, client.MachineName, result);
                 }
             }
         }
@@ -581,7 +592,7 @@ namespace HL7.Dotnetcore
                     //EasyTcpClient easyTcpClient = (EasyTcpClient)client.MachineObject;
                     //easyTcpClient.Send(ackMessageBytes);
                     //////////////////////////////////////////////////
-                    ReportData(client.MachineCode, client.MachineName, result);
+                    ReportData(client.App_ID,client.MachineCode, client.MachineName, result);
                 }
             }
         }
@@ -608,7 +619,7 @@ namespace HL7.Dotnetcore
                         if (line.Contains(client.DataEndLine) == true)
                         {
                             addLog(" " + client.StringData);
-                            ReportData(client.MachineCode, client.MachineName, client.StringData);
+                            ReportData(client.App_ID,client.MachineCode, client.MachineName, client.StringData);
 
                             client.StringData = "";
                         }
@@ -625,21 +636,25 @@ namespace HL7.Dotnetcore
             }
         }
 
-        private async Task<bool> ReportData(string machineCode, string machineName, string result, bool saveTable = true)
+        private async Task<bool> ReportData(string appID,string machineCode, string machineName, string result, bool saveTable = true)
         {
             try
             {
+                Machines machines = new Machines(appID, machineCode, machineName, result);
+                var jsonDataRaw = JsonConvert.SerializeObject(machines.JsonData);
                 if (saveTable == true)
                 {
-                    SaveTable(machineCode, machineName, result);
+                    SaveTable(machines.MachineCode, machines.MachineName, result);
                 }
 
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                 var parameters = new Dictionary<string, string>();
-                parameters.Add("machineCode", machineCode);
-                parameters.Add("machineName", machineName);
-                parameters.Add("result", result);
+                parameters.Add("APP_ID", machines.APP_ID);
+                parameters.Add("machineCode", machines.MachineCode);
+                parameters.Add("machineName", machines.MachineName);
+                parameters.Add("result", machines.Result);
+                parameters.Add("jsondata", jsonDataRaw);
                 parameters.Add("repost", saveTable.ToString());
                 parameters.Add("Content-Type", "application/x-www-form-urlencoded");
                 HttpContent content = new FormUrlEncodedContent(parameters);
@@ -987,10 +1002,11 @@ namespace HL7.Dotnetcore
             }
             // Select data from grid 2
             string machinetime = row.Cells[0].Value.ToString();
-            string machinecode = row.Cells[1].Value.ToString();
-            string machinename = row.Cells[2].Value.ToString();
-            string machinedata = row.Cells[3].Value.ToString();
-            ReportData(machinecode, machinename, machinedata, false);
+            string appID = row.Cells[1].Value.ToString();
+            string machinecode = row.Cells[2].Value.ToString();
+            string machinename = row.Cells[3].Value.ToString();
+            string machinedata = row.Cells[4].Value.ToString();
+            ReportData(appID,machinecode, machinename, machinedata, false);
             //
         }
 

@@ -151,7 +151,7 @@ namespace HL7.Dotnetcore
                         }
                     }
                 }
-                
+
 
             }
             catch (Exception ex)
@@ -205,7 +205,7 @@ namespace HL7.Dotnetcore
                     client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     int AppID = Convert.ToInt16(APP_ID);
                     int cid = Convert.ToInt16(CLINIC_ID);
-                    var response = await client.GetAsync(PostURL + "?f=list&id="+ AppID + "&cid="+ cid);
+                    var response = await client.GetAsync(PostURL + "?f=list&id=" + AppID + "&cid=" + cid);
                     if (response.IsSuccessStatusCode)
                     {
                         var resultText = await response.Content.ReadAsStringAsync();
@@ -616,7 +616,7 @@ namespace HL7.Dotnetcore
                     //EasyTcpClient easyTcpClient = (EasyTcpClient)client.MachineObject;
                     //easyTcpClient.Send(ackMessageBytes);
                     //////////////////////////////////////////////////
-                    ReportData(client.MachineCode, client.MachineName, result,rawResult);
+                    ReportData(client.MachineCode, client.MachineName, result, rawResult);
                 }
             }
         }
@@ -642,7 +642,7 @@ namespace HL7.Dotnetcore
                         if (line.Contains(client.DataEndLine) == true)
                         {
                             addLog(" " + client.StringData);
-                            ReportData(client.MachineCode, client.MachineName, client.StringData,"");
+                            ReportData(client.MachineCode, client.MachineName, client.StringData, "");
 
                             client.StringData = "";
                         }
@@ -675,10 +675,10 @@ namespace HL7.Dotnetcore
                 client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                 var parameters = new Dictionary<string, string>();
                 parameters.Add("APP_ID", APP_ID);
+                parameters.Add("clinic_id", CLINIC_ID);
                 parameters.Add("machineCode", machineCode);
                 parameters.Add("machineName", machineName);
                 parameters.Add("result", result);
-                parameters.Add("clinic_id", CLINIC_ID);
                 //parameters.Add("jsondata", jsonDataResult);
                 parameters.Add("repost", saveTable.ToString());
                 parameters.Add("Content-Type", "application/x-www-form-urlencoded");
@@ -1030,7 +1030,7 @@ namespace HL7.Dotnetcore
             string machinecode = row.Cells[1].Value.ToString();
             string machinename = row.Cells[2].Value.ToString();
             string machinedata = row.Cells[3].Value.ToString();
-            ReportData(machinecode, machinename, machinedata,"", false);
+            ReportData(machinecode, machinename, machinedata, "", false);
             //
         }
 

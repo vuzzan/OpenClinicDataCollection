@@ -63,20 +63,18 @@
             listBox1.Dock = DockStyle.Fill;
             listBox1.FormattingEnabled = true;
             listBox1.HorizontalScrollbar = true;
-            listBox1.ItemHeight = 20;
-            listBox1.Location = new Point(2, 2);
-            listBox1.Margin = new Padding(2);
+            listBox1.ItemHeight = 30;
+            listBox1.Location = new Point(3, 3);
             listBox1.Name = "listBox1";
             listBox1.ScrollAlwaysVisible = true;
-            listBox1.Size = new Size(813, 316);
+            listBox1.Size = new Size(1224, 481);
             listBox1.TabIndex = 0;
             // 
             // button1
             // 
-            button1.Location = new Point(10, 162);
-            button1.Margin = new Padding(2);
+            button1.Location = new Point(15, 243);
             button1.Name = "button1";
-            button1.Size = new Size(84, 33);
+            button1.Size = new Size(126, 50);
             button1.TabIndex = 1;
             button1.Text = "TCPSim";
             button1.UseVisualStyleBackColor = true;
@@ -84,10 +82,9 @@
             // 
             // button2
             // 
-            button2.Location = new Point(10, 63);
-            button2.Margin = new Padding(2);
+            button2.Location = new Point(15, 94);
             button2.Name = "button2";
-            button2.Size = new Size(84, 33);
+            button2.Size = new Size(126, 50);
             button2.TabIndex = 2;
             button2.Text = "StartApp";
             button2.UseVisualStyleBackColor = true;
@@ -95,10 +92,9 @@
             // 
             // button3
             // 
-            button3.Location = new Point(10, 118);
-            button3.Margin = new Padding(2);
+            button3.Location = new Point(15, 177);
             button3.Name = "button3";
-            button3.Size = new Size(84, 33);
+            button3.Size = new Size(126, 50);
             button3.TabIndex = 3;
             button3.Text = "RS232Sim";
             button3.UseVisualStyleBackColor = true;
@@ -109,12 +105,11 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Dock = DockStyle.Fill;
             dataGridView1.Location = new Point(0, 0);
-            dataGridView1.Margin = new Padding(2);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 72;
             dataGridView1.RowTemplate.Height = 37;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.Size = new Size(825, 130);
+            dataGridView1.Size = new Size(1238, 195);
             dataGridView1.TabIndex = 4;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             dataGridView1.SelectionChanged += dataGridView1_SelectionChanged;
@@ -122,10 +117,9 @@
             // 
             // button4
             // 
-            button4.Location = new Point(10, 17);
-            button4.Margin = new Padding(2);
+            button4.Location = new Point(15, 26);
             button4.Name = "button4";
-            button4.Size = new Size(84, 33);
+            button4.Size = new Size(126, 50);
             button4.TabIndex = 5;
             button4.Text = "SendTest";
             button4.UseVisualStyleBackColor = true;
@@ -143,18 +137,16 @@
             panel1.Controls.Add(button4);
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button1);
-            panel1.Location = new Point(839, 8);
-            panel1.Margin = new Padding(2);
+            panel1.Location = new Point(1258, 12);
             panel1.Name = "panel1";
-            panel1.Size = new Size(107, 305);
+            panel1.Size = new Size(160, 458);
             panel1.TabIndex = 6;
             // 
             // button5
             // 
-            button5.Location = new Point(10, 236);
-            button5.Margin = new Padding(2);
+            button5.Location = new Point(15, 354);
             button5.Name = "button5";
-            button5.Size = new Size(84, 33);
+            button5.Size = new Size(126, 50);
             button5.TabIndex = 6;
             button5.Text = "SendTest";
             button5.UseVisualStyleBackColor = true;
@@ -162,7 +154,6 @@
             // splitContainer1
             // 
             splitContainer1.Location = new Point(0, 0);
-            splitContainer1.Margin = new Padding(2);
             splitContainer1.Name = "splitContainer1";
             splitContainer1.Orientation = Orientation.Horizontal;
             // 
@@ -173,9 +164,9 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(tabControl1);
-            splitContainer1.Size = new Size(825, 492);
-            splitContainer1.SplitterDistance = 130;
-            splitContainer1.SplitterWidth = 9;
+            splitContainer1.Size = new Size(1238, 738);
+            splitContainer1.SplitterDistance = 195;
+            splitContainer1.SplitterWidth = 14;
             splitContainer1.TabIndex = 7;
             // 
             // tabControl1
@@ -184,21 +175,19 @@
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
-            tabControl1.Margin = new Padding(2);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(825, 353);
+            tabControl1.Size = new Size(1238, 529);
             tabControl1.TabIndex = 0;
             // 
             // tabPage1
             // 
             tabPage1.Controls.Add(panel2);
             tabPage1.Controls.Add(dataGridView2);
-            tabPage1.Location = new Point(4, 29);
-            tabPage1.Margin = new Padding(2);
+            tabPage1.Location = new Point(4, 39);
             tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(2);
-            tabPage1.Size = new Size(817, 320);
+            tabPage1.Padding = new Padding(3, 3, 3, 3);
+            tabPage1.Size = new Size(1230, 486);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Data";
             tabPage1.UseVisualStyleBackColor = true;
@@ -207,18 +196,16 @@
             // 
             panel2.Controls.Add(button6);
             panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(2, 252);
-            panel2.Margin = new Padding(2);
+            panel2.Location = new Point(3, 384);
             panel2.Name = "panel2";
-            panel2.Size = new Size(813, 66);
+            panel2.Size = new Size(1224, 99);
             panel2.TabIndex = 6;
             // 
             // button6
             // 
-            button6.Location = new Point(676, 16);
-            button6.Margin = new Padding(2);
+            button6.Location = new Point(1014, 24);
             button6.Name = "button6";
-            button6.Size = new Size(129, 33);
+            button6.Size = new Size(194, 50);
             button6.TabIndex = 7;
             button6.Text = "Re-post Data";
             button6.UseVisualStyleBackColor = true;
@@ -228,13 +215,12 @@
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Dock = DockStyle.Fill;
-            dataGridView2.Location = new Point(2, 2);
-            dataGridView2.Margin = new Padding(2);
+            dataGridView2.Location = new Point(3, 3);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.RowHeadersWidth = 72;
             dataGridView2.RowTemplate.Height = 37;
             dataGridView2.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView2.Size = new Size(813, 316);
+            dataGridView2.Size = new Size(1224, 480);
             dataGridView2.TabIndex = 5;
             dataGridView2.CellContentClick += dataGridView2_CellContentClick;
             dataGridView2.CellMouseDoubleClick += dataGridView2_CellMouseDoubleClick;
@@ -243,23 +229,21 @@
             // tabPage2
             // 
             tabPage2.Controls.Add(listBox1);
-            tabPage2.Location = new Point(4, 29);
-            tabPage2.Margin = new Padding(2);
+            tabPage2.Location = new Point(4, 39);
             tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(2);
-            tabPage2.Size = new Size(817, 320);
+            tabPage2.Padding = new Padding(3, 3, 3, 3);
+            tabPage2.Size = new Size(1230, 487);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Console";
             tabPage2.UseVisualStyleBackColor = true;
             // 
             // FormMain
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(974, 492);
+            ClientSize = new Size(1461, 738);
             Controls.Add(splitContainer1);
             Controls.Add(panel1);
-            Margin = new Padding(2);
             MaximizeBox = false;
             Name = "FormMain";
             Text = "OpenClinic Data Collection 2.1";

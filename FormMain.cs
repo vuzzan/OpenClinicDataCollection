@@ -85,70 +85,73 @@ namespace HL7.Dotnetcore
                 addLog("HOSTNAME: " + HOSTNAME);
                 addLog("PostURL: " + PostURL);
                 addLog("AutoUpdateURL: " + AutoUpdateURL);
-
-                JArray arr1 = (JArray)o1.GetValue("LIST");
-                foreach (JObject obj in arr1)
+                if (ISLOCAL == true)
                 {
-                    string APP_ID = (string)obj.GetValue("APP_ID");
-                    string MAC_MODEL = (string)obj.GetValue("MAC_MODEL");
-                    string MAC_CODE = (string)obj.GetValue("MAC_CODE");
-                    string MAC_NAME = (string)obj.GetValue("MAC_NAME");
-                    string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
-                    string MAC_ENDLINE = (string)obj.GetValue("MAC_ENDLINE");
-                    
-
-                    string[] tmp = MAC_CONNECT.Split("|");
-                    if (tmp.Length >= 1)
+                    JArray arr1 = (JArray)o1.GetValue("LIST");
+                    foreach (JObject obj in arr1)
                     {
-                        if (MAC_CONNECT.ToUpper().IndexOf("COM") > -1)
+                        string APP_ID = (string)obj.GetValue("APP_ID");
+                        string MAC_MODEL = (string)obj.GetValue("MAC_MODEL");
+                        string MAC_CODE = (string)obj.GetValue("MAC_CODE");
+                        string MAC_NAME = (string)obj.GetValue("MAC_NAME");
+                        string MAC_CONNECT = (string)obj.GetValue("MAC_CONNECT");
+                        string MAC_ENDLINE = (string)obj.GetValue("MAC_ENDLINE");
+
+
+                        string[] tmp = MAC_CONNECT.Split("|");
+                        if (tmp.Length >= 1)
                         {
-                            MachineData dta = new MachineData()
+                            if (MAC_CONNECT.ToUpper().IndexOf("COM") > -1)
                             {
-                                App_ID = APP_ID,
-                                MachineModel = MAC_MODEL,
-                                MachineCode = MAC_CODE,
-                                MachineName = MAC_NAME,
-                                MachineType = "RS232",
-                                MachineCOM = tmp[0].ToUpper(),
-                                MachineBaudrate = (tmp.Length > 1) ? tmp[1].ToUpper() : "9600",
-                                MachineObject = null,
-                                DataEndLine = MAC_ENDLINE
-                            };
-                            listMachineData.Add(dta);
-                            addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                                MachineData dta = new MachineData()
+                                {
+                                    App_ID = APP_ID,
+                                    MachineModel = MAC_MODEL,
+                                    MachineCode = MAC_CODE,
+                                    MachineName = MAC_NAME,
+                                    MachineType = "RS232",
+                                    MachineCOM = tmp[0].ToUpper(),
+                                    MachineBaudrate = (tmp.Length > 1) ? tmp[1].ToUpper() : "9600",
+                                    MachineObject = null,
+                                    DataEndLine = MAC_ENDLINE
+                                };
+                                listMachineData.Add(dta);
+                                addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                            }
+                            else
+                            {
+                                MachineData tcp = new MachineData()
+                                {
+                                    App_ID = APP_ID,
+                                    MachineModel = MAC_MODEL,
+                                    MachineCode = MAC_CODE,
+                                    MachineName = MAC_NAME,
+                                    MachineType = "TCP",
+                                    MachineIP = tmp[0].ToUpper(),
+                                    MachinePort = tmp[1].ToUpper(),
+                                    MachineBaudrate = tmp[2].ToUpper(),
+                                    MachineObject = null,
+                                    DataEndLine = MAC_ENDLINE
+                                };
+                                if (tcp.MachineBaudrate == "PASSIVE")
+                                {
+                                    tcp.MachineIP = "0.0.0.0";
+                                }
+                                if (Convert.ToInt32(tcp.MachinePort) <= 10)
+                                {
+                                    tcp.MachinePort = "5000";
+                                }
+                                listMachineData.Add(tcp);
+                                addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                            }
                         }
                         else
                         {
-                            MachineData tcp = new MachineData()
-                            {
-                                App_ID = APP_ID,
-                                MachineModel = MAC_MODEL,
-                                MachineCode = MAC_CODE,
-                                MachineName = MAC_NAME,
-                                MachineType = "TCP",
-                                MachineIP = tmp[0].ToUpper(),
-                                MachinePort = tmp[1].ToUpper(),
-                                MachineBaudrate = tmp[2].ToUpper(),
-                                MachineObject = null,
-                                DataEndLine = MAC_ENDLINE
-                            };
-                            if (tcp.MachineBaudrate == "PASSIVE")
-                            {
-                                tcp.MachineIP = "0.0.0.0";
-                            }
-                            if (Convert.ToInt32(tcp.MachinePort) <= 10)
-                            {
-                                tcp.MachinePort = "5000";
-                            }
-                            listMachineData.Add(tcp);
-                            addLog(">>>> Data machine added: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
+                            addLog("ERROR: Data machine not correct: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
                         }
                     }
-                    else
-                    {
-                        addLog("ERROR: Data machine not correct: [" + MAC_NAME + "] [" + MAC_CODE + "] " + MAC_CONNECT);
-                    }
                 }
+                
 
             }
             catch (Exception ex)
@@ -229,8 +232,8 @@ namespace HL7.Dotnetcore
                                     {
                                         listMachineData.Add(new MachineData()
                                         {
-                                            App_ID = MAC_CODE,
-                                            ClinicID = MAC_CODE,
+                                            App_ID = APP_ID,
+                                            ClinicID = CLINIC_ID,
                                             MachineModel = MAC_MODEL,
                                             MachineCode = MAC_CODE,
                                             MachineName = MAC_NAME,
@@ -247,8 +250,8 @@ namespace HL7.Dotnetcore
                                         // TCP
                                         MachineData tcp = new MachineData()
                                         {
-                                            App_ID = MAC_CODE,
-                                            ClinicID = MAC_CODE,
+                                            App_ID = APP_ID,
+                                            ClinicID = CLINIC_ID,
                                             MachineModel = MAC_MODEL,
                                             MachineCode = MAC_CODE,
                                             MachineName = MAC_NAME,

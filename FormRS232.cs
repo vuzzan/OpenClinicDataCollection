@@ -45,7 +45,6 @@ namespace HL7.Dotnetcore
             {
                 addLog("Send Error: " + ex.Message);
             }
-
         }
 
         private void _serialPort_Disposed(object? sender, EventArgs e)

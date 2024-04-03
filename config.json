@@ -1,11 +1,14 @@
 {
+  "APP_ID": "1",
+  "CLINIC_ID": "1",
   "HOST": "saigon.webhop.me:8282",
-  "URL": "/openclinic/app/equipment/index.php",
+  "URL": "/app/equipment/index2.php",
   "AUTOUPDATE": "/openclinic/download/dc.xml",
-  "ISLOCAL": true,
+  "ISLOCAL": false,
   "LIST": [
     {
       "APP_ID": "1",
+      "MAC_MODEL": "HH1",
       "MAC_CODE": "HH.3.49172.000002",
       "MAC_NAME": "M\u00e1y Huy\u1ebft H\u1ecdc-BC20S-TCP",
       "MAC_CONNECT": "192.168.1.249|5100|PASSIVE",
@@ -13,9 +16,11 @@
     },
     {
       "APP_ID": "2",
+      "MAC_MODEL": "NT1",
       "MAC_CODE": "NT.3.49172.000004",
       "MAC_NAME": "M\u00e1y N\u01b0\u1edbc ti\u1ec3u-UA66-Rs232",
-      "MAC_CONNECT": "COM3",
+      "MAC_CONNECT": "COM5",
+      //"MAC_CONNECT": "192.168.1.249|5101|PASSIVE",
       "MAC_ENDLINE": ""
     }
   ]

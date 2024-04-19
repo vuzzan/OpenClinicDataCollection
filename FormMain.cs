@@ -71,15 +71,30 @@ namespace HL7.Dotnetcore
                 CLINIC_ID = (string)o1.GetValue("CLINIC_ID");
                 HOSTNAME = (string)o1.GetValue("HOST");
                 PostURL = (string)o1.GetValue("URL");
-                PostURL = "http://" + HOSTNAME + PostURL;
                 AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
-                AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
-
+                //
+                if (HOSTNAME.ToLower().Contains("https://"))
+                {
+                    PostURL = HOSTNAME + PostURL;
+                    AutoUpdateURL = HOSTNAME + AutoUpdateURL;
+                }
+                else
+                {
+                    if (HOSTNAME.ToLower().Contains("http://"))
+                    {
+                        PostURL = HOSTNAME + PostURL;
+                        AutoUpdateURL = HOSTNAME + AutoUpdateURL;
+                    }
+                    else
+                    {
+                        PostURL = "http://" + HOSTNAME + PostURL;
+                        AutoUpdateURL = "http://" + HOSTNAME + AutoUpdateURL;
+                    }
+                }
                 JToken isLocal;
                 if (o1.TryGetValue("ISLOCAL", out isLocal))
                 {
                     ISLOCAL = (bool)o1.GetValue("ISLOCAL");
-
                 }
 
                 addLog("HOSTNAME: " + HOSTNAME);
@@ -205,6 +220,7 @@ namespace HL7.Dotnetcore
                     client.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     int AppID = Convert.ToInt16(APP_ID);
                     int cid = Convert.ToInt16(CLINIC_ID);
+                    addLog("Get data: " + PostURL + "?f=list&id=" + AppID + "&cid=" + cid);
                     var response = await client.GetAsync(PostURL + "?f=list&id=" + AppID + "&cid=" + cid);
                     if (response.IsSuccessStatusCode)
                     {

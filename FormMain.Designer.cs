@@ -67,7 +67,7 @@
             listBox1.Location = new Point(3, 3);
             listBox1.Name = "listBox1";
             listBox1.ScrollAlwaysVisible = true;
-            listBox1.Size = new Size(1224, 481);
+            listBox1.Size = new Size(1224, 480);
             listBox1.TabIndex = 0;
             // 
             // button1
@@ -186,7 +186,7 @@
             tabPage1.Controls.Add(dataGridView2);
             tabPage1.Location = new Point(4, 39);
             tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(3, 3, 3, 3);
+            tabPage1.Padding = new Padding(3);
             tabPage1.Size = new Size(1230, 486);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Data";
@@ -231,8 +231,8 @@
             tabPage2.Controls.Add(listBox1);
             tabPage2.Location = new Point(4, 39);
             tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3, 3, 3, 3);
-            tabPage2.Size = new Size(1230, 487);
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(1230, 486);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Console";
             tabPage2.UseVisualStyleBackColor = true;
@@ -241,7 +241,7 @@
             // 
             AutoScaleDimensions = new SizeF(12F, 30F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1461, 738);
+            ClientSize = new Size(1239, 738);
             Controls.Add(splitContainer1);
             Controls.Add(panel1);
             MaximizeBox = false;

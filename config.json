@@ -1,9 +1,9 @@
 {
-  "APP_ID": "1",
-  "CLINIC_ID": "3",
-  "HOST": "https://vnem.com",
-  "URL": "/app/equipment/index3.php",
-  "AUTOUPDATE": "/app/download/update.xml",
+  "APP_ID": "2",
+  "CLINIC_ID": "1",
+  "HOST": "tt.vnem.com",
+  "URL": "/openclinic/app/equipment/index3.php",
+  "AUTOUPDATE": "/openclinic/app/download/update.xml",
   "ISLOCAL": false,
   "LIST": [
   ]

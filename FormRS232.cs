@@ -32,7 +32,7 @@ namespace HL7.Dotnetcore
         {
             try
             {
-                _serialPort = new SerialPort(comboBox1.Text, 19200, Parity.None, 8, StopBits.One);
+                _serialPort = new SerialPort(comboBox1.Text, 9600, Parity.None, 8, StopBits.One);
                 _serialPort.WriteTimeout = 1000;
                 _serialPort.ReadTimeout = 1000;
                 _serialPort.DataReceived += _serialPort_DataReceived;
@@ -61,7 +61,21 @@ namespace HL7.Dotnetcore
 
         private void _serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            addLog("SIM COM RECEIVE");
+            try
+            {
+                SerialPort _serialPort = (SerialPort)sender;
+                byte[] data = new byte[_serialPort.BytesToRead];
+                _serialPort.Read(data, 0, data.Length);
+                //data.ToList().ForEach(b => {
+                //    addLog("Recv " );
+                //});
+                string hex = BitConverter.ToString(data);
+                addLog("Recv " + hex.Replace("-", " 0x"));
+            }
+            catch (Exception ex)
+            {
+                addLog("ERROR RS232 read: " + ex.Message);
+            }
         }
         //test
         private void button2_Click(object sender, EventArgs e)
@@ -115,6 +129,55 @@ namespace HL7.Dotnetcore
                 _serialPort.Close();
                 _serialPort = null;
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            comboBox1.Items.Clear();
+            string[] ports = SerialPort.GetPortNames();
+            foreach (string port in ports)
+            {
+                comboBox1.Items.Add(port);
+            }
+            comboBox1.SelectedIndex = 0;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            // Send ENQ
+            sendByte(0x05);
+        }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            // Send ACK
+            sendByte(0x04);
+        }
+        //special characters used for msg framing
+        //#define ENQ                0x05            //ASCII 0x05 == ENQUIRY
+        //#define ACK                0x06
+        //#define STX                0x02            //START OF TEXT
+        //#define ETX                0x03            //END OF TEXT
+        //#define EOT                0x04            //END OF TRANSMISSION
+        //#define LF                 0x0A            //LINEFEED
+        //#define NUL                0x00            //NULL termination character
+        private void sendByte(int b)
+        {
+            if (_serialPort == null)
+            {
+                addLog("Not connected");
+            }
+            else
+            {
+                byte[] data = new byte[] { (byte)b };
+                _serialPort.Write(data, 0, 1);
+                addLog("Send byte: " + BitConverter.ToString(data));
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            byte[] data = new byte[] { 0x0d, 0x0a, 0x04 };
+            _serialPort.Write(data, 0, 3);
         }
     }
 }

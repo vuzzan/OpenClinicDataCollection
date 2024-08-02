@@ -647,20 +647,45 @@ namespace HL7.Dotnetcore
                     try
                     {
                         SerialPort _serialPort = (SerialPort)sender;
-                        string line = _serialPort.ReadLine();
-                        addLog("" + line);
+                        byte[] data = new byte[_serialPort.BytesToRead];
+                        _serialPort.Read(data, 0, data.Length);
+                        //data.ToList().ForEach(b => {
+                        //    addLog("Recv " );
+                        //});
+                        string hex = BitConverter.ToString(data);
+                        //addLog("Recv " + hex.Replace("-", " 0x"));
+                        bool isStop = false;
+                        if (data[data.Length - 1] == 0x04)
+                        {
+                            addLog("STOP RECV");
+                            isStop = true;
+                        }
+                        if (data[data.Length - 1] == 0x05)
+                        {
+                            addLog("SERIAL CONTROL MODE");
+                            client.DataEndLine = "CONTROL";
+                        }
+                        string line = System.Text.Encoding.ASCII.GetString(data);
+                        //addLog("" + line + " hex=" + hex.Replace("-", " 0x") +" Num="+ _serialPort.BytesToRead);
                         client.StringData += line;
                         if (client.DataEndLine == null)
                         {
                             // Default
                             client.DataEndLine = "GLU";
                         }
-                        if (line.Contains(client.DataEndLine) == true)
+                        if (line.Contains(client.DataEndLine) == true
+                            || isStop == true)
                         {
                             addLog(" " + client.StringData);
                             ReportData(client.MachineCode, client.MachineName, client.StringData, "");
 
                             client.StringData = "";
+                        }
+                        // SEND ACK
+                        if (client.DataEndLine == "CONTROL") {
+                            // SEND ACK
+                            byte[] byteACk = { 0x06 };
+                            _serialPort.Write(byteACk, 0, 1);
                         }
                         //byte[] data = new byte[_serialPort.BytesToRead];
                         //_serialPort.Read(data, 0, data.Length);

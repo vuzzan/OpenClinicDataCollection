@@ -10,6 +10,10 @@ namespace HL7.Dotnetcore
     public class MachineData
     {
         [Browsable(false)]
+        public bool threadStop;
+        [Browsable(false)]
+        public Thread thread;
+        [Browsable(false)]
         public string App_ID { get; set; }
         [Browsable(false)]
         public string ClinicID { get; set; }
@@ -31,7 +35,9 @@ namespace HL7.Dotnetcore
             } 
         }
         public string MachineStatus { get; set; }
-        public MachineData() { }
+        public MachineData() {
+            threadStop = false;
+        }
         [Browsable(false)]
         public string DataEndLine { get; set; }
         [Browsable(false)]

@@ -32,6 +32,9 @@ using OpenClinicDataCollection;
 using System.Data.Entity;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using static System.Data.Entity.Infrastructure.Design.Executor;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace HL7.Dotnetcore
 {
@@ -65,6 +68,12 @@ namespace HL7.Dotnetcore
             {
                 CreateTable();
 
+                if (listMachineData.Count > 0)
+                {
+
+                }
+
+
                 JObject o1 = JObject.Parse(File.ReadAllText(@"config.json"));
                 HOSTNAME = (string)o1.GetValue("HOST");
                 APP_ID = (string)o1.GetValue("APP_ID");
@@ -72,6 +81,11 @@ namespace HL7.Dotnetcore
                 HOSTNAME = (string)o1.GetValue("HOST");
                 PostURL = (string)o1.GetValue("URL");
                 AutoUpdateURL = (string)o1.GetValue("AUTOUPDATE");
+                // 
+                txtHost.Text = HOSTNAME;
+                txtClinicID.Text = CLINIC_ID;
+                txtAppID.Text = APP_ID;
+                txtAPIURL.Text = PostURL;
                 //
                 if (HOSTNAME.ToLower().Contains("https://"))
                 {
@@ -231,6 +245,16 @@ namespace HL7.Dotnetcore
                         {
                             addLog("Parse list machine");
                             JObject o1 = JObject.Parse(resultText);
+
+                            JToken tokennull = o1["machine"];
+
+                            //if (o1.GetValue("machine") == JValue.)
+                            if (tokennull.Type == JTokenType.Null)
+                            {
+                                MessageBox.Show("Không có máy nào ở AppId=" + AppID + ". Check phía server DB config.");
+                                addLog("NO MACHINE - GET DATA FROM REMOTE: ");
+                                return true;
+                            }
                             JArray arr1 = (JArray)o1.GetValue("machine");
                             foreach (JObject obj in arr1)
                             {
@@ -370,16 +394,18 @@ namespace HL7.Dotnetcore
 
         private void StartApp()
         {
-            tabControl1.SelectedIndex = 1;
+            tabControl1.SelectedIndex = 0;
             addLog("Connect machine ...");
             foreach (MachineData client in listMachineData)
             {
                 if (client.MachineType == "TCP")
                 {
-                    new Thread(() =>
+                    Thread thread = new Thread(() =>
                     {
                         RetryConnectMachine(client);
-                    }).Start();
+                    });
+                    client.thread = thread;
+                    thread.Start();
                 }
                 else if (client.MachineType == "RS232")
                 {
@@ -480,6 +506,10 @@ namespace HL7.Dotnetcore
         {
             while (appStop == false)
             {
+                if (client.threadStop == true)
+                {
+                    break;
+                }
                 addLog("Try connect to: " + client.ToString());
                 if (client.MachineIP.ToUpper().Contains("LOCALHOST") ||
                     client.MachineIP.ToUpper().Contains("127.0.0.1"))
@@ -515,8 +545,15 @@ namespace HL7.Dotnetcore
                     }
                     else
                     {
-                        addLog(">>>> Retry connect after 10s: " + client.ToString());
-                        Thread.Sleep(10000);
+                        addLog(">>>> Retry connect after 5s: " + client.ToString());
+                        for (int i = 0; i < 50; i++)
+                        {
+                            if (client.threadStop == true)
+                            {
+                                break;
+                            }
+                            Thread.Sleep(100);
+                        }
                     }
                 }
 
@@ -649,12 +686,19 @@ namespace HL7.Dotnetcore
                         SerialPort _serialPort = (SerialPort)sender;
                         byte[] data = new byte[_serialPort.BytesToRead];
                         _serialPort.Read(data, 0, data.Length);
-                        //data.ToList().ForEach(b => {
-                        //    addLog("Recv " );
-                        //});
+                        if (data[data.Length - 1] == 0xFF)
+                        {
+                            log.Debug("Recv FF");
+                            return;
+                        }
+                        data.ToList().ForEach(b => {
+                            addLog("Recv " );
+                        });
                         string hex = BitConverter.ToString(data);
-                        //addLog("Recv " + hex.Replace("-", " 0x"));
+                        addLog("Recv " + hex.Replace("-", " 0x"));
                         bool isStop = false;
+
+                        
                         if (data[data.Length - 1] == 0x04)
                         {
                             addLog("STOP RECV");
@@ -666,7 +710,7 @@ namespace HL7.Dotnetcore
                             client.DataEndLine = "CONTROL";
                         }
                         string line = System.Text.Encoding.ASCII.GetString(data);
-                        //addLog("" + line + " hex=" + hex.Replace("-", " 0x") +" Num="+ _serialPort.BytesToRead);
+                        addLog("" + line + " hex=" + hex.Replace("-", " 0x") +" Num="+ _serialPort.BytesToRead);
                         client.StringData += line;
                         if (client.DataEndLine == null)
                         {
@@ -682,7 +726,8 @@ namespace HL7.Dotnetcore
                             client.StringData = "";
                         }
                         // SEND ACK
-                        if (client.DataEndLine == "CONTROL") {
+                        if (client.DataEndLine == "CONTROL")
+                        {
                             // SEND ACK
                             byte[] byteACk = { 0x06 };
                             _serialPort.Write(byteACk, 0, 1);
@@ -729,8 +774,43 @@ namespace HL7.Dotnetcore
                 {
                     var resultText = await response.Content.ReadAsStringAsync();
                     addLog("    >>>> " + resultText);
-                    addLog(">>>> Post data done to : " + machineCode + " " + machineName + " Length: " + resultText.Length);
-                    return true;
+                    try
+                    {
+                        JObject o1 = JObject.Parse(resultText);
+                        addLog("    >>>> equipment_data: " + o1["equipment_data"]);
+                        JObject parse_data = (JObject )o1["parse_data"];
+                        JObject result_data = (JObject)parse_data["result"];
+                        JArray xetnghiem = (JArray)result_data["xetnghiem"];
+                        if (xetnghiem.Count == 0)
+                        {
+                            addLog("    >>>> List data OK: ");
+                            JArray arr1 = (JArray)result_data.GetValue("data");
+                            foreach (JObject obj in arr1)
+                            {
+                                string MA_CHI_SO = (string)obj.GetValue("MA_CHI_SO");
+                                string TEN_CHI_SO = (string)obj.GetValue("TEN_CHI_SO");
+                                string VALUE = (string)obj.GetValue("VALUE");
+                                addLog("         >>>> " + MA_CHI_SO +" ["+ TEN_CHI_SO + "] "+ VALUE);
+                            }
+                        }
+                        else
+                        {
+                            addLog("    >>>> Có lỗi khi thêm table xetnghiem: ");
+                            foreach (JValue obj in xetnghiem)
+                            {
+                                addLog("         >>>> " + obj.ToString());
+                            }
+                        }
+
+                            addLog("    >>>> equipment_data: " + o1["equipment_data"]);
+                        addLog(">>>> Post data done to : " + machineCode + " " + machineName + " Length: " + resultText.Length);
+                        return true;
+                    }
+                    catch (Exception eee)
+                    {
+                        addLog(">>>> Co loi:  " + eee.Message);
+                        return false;
+                    }
                 }
                 else
                 {
@@ -945,7 +1025,6 @@ namespace HL7.Dotnetcore
                 {
                     //data = data.Replace("\n", "<br>").Replace("\'", "''").Replace("\"", "\"\"");
                     data = data.Replace("\'", "''").Replace("\"", "\"\"");
-                    Console.WriteLine(connection.AutoCommit);
                     var command = connection.CreateCommand();
                     command.CommandText =
                     @"insert into machine_data (MAC_NAME,MAC_CODE,MAC_DATA,MAC_TIME) values(" +
@@ -1032,15 +1111,11 @@ namespace HL7.Dotnetcore
                         SQLiteDataReader r = fmd.ExecuteReader();
                         while (r.Read())
                         {
-
-
                             string MAC_CODE = (string)r["MAC_CODE"];
                             string MAC_NAME = (string)r["MAC_NAME"];
                             string MAC_DATA = (string)r["MAC_DATA"];
                             string MAC_TIME = (string)r["MAC_TIME"];
-
                             table.Rows.Add(MAC_TIME, MAC_CODE, MAC_NAME, MAC_DATA);
-
                         }
 
                         connection.Close();
@@ -1096,6 +1171,169 @@ namespace HL7.Dotnetcore
             }
             string machinedata = row.Cells[3].Value.ToString();
             MessageBox.Show(machinedata);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            using (var connection = new SQLiteConnection("Data Source=hello.db"))
+            {
+                connection.Open();
+                try
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText =
+                    @"delete * from machine_data";
+                    command.ExecuteNonQuery();
+                    log.Info("Clear db done");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                connection.Close();
+            }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                log.Info("Update and reload start....");
+                var obj = new
+                {
+                    CLINIC_ID = txtClinicID.Text.Trim(),
+                    APP_ID = txtAppID.Text.Trim(),
+                    HOST = txtHost.Text.Trim(),
+                    URL = txtAPIURL.Text.Trim(),
+                    AUTOUPDATE = "/openclinic/app/download/update.xml",
+                    ISLOCAL = false,
+                    LIST = new List<string>()
+                };
+                var jsonString = JsonConvert.SerializeObject(obj, new JsonSerializerSettings()
+                {
+                    Formatting = Newtonsoft.Json.Formatting.Indented,
+                    ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                });
+                log.Info("Update : " + jsonString);
+                File.WriteAllText(@"config.json", jsonString);
+
+                log.Info("Reload start ");
+                StopConnection();
+                LoadConfigLocal();
+
+                StartApplication();
+                log.Info("Reload Done");
+            }
+            catch (Exception ex)
+            {
+                log.Info("Error write json: " + ex.Message);
+            }
+        }
+
+        private void StopConnection()
+        {
+            try
+            {
+                log.Info("Stop connection ");
+                foreach (MachineData client in listMachineData)
+                {
+                    if (client.MachineType == "TCP")
+                    {
+                        if (client.MachineObject != null)
+                        {
+                            client.threadStop = true;
+                            if (client.thread != null)
+                            {
+
+                            }
+                            if (client.MachineBaudrate == "PASSIVE")
+                            {
+                                EasyTcpServer sp = (EasyTcpServer)client.MachineObject;
+                                log.Info("Closed " + sp.ToString());
+
+                                sp.OnDisconnect -= _EasyTcpClient_OnDisconnect;
+                                sp.Dispose();
+                                sp = null;
+                            }
+                            else
+                            {
+                                EasyTcpClient tcpClient = (EasyTcpClient)client.MachineObject;
+                                log.Info("Closed " + tcpClient.ToString());
+                                tcpClient.OnDisconnect -= _EasyTcpClient_OnDisconnect;
+                                tcpClient.Dispose();
+                                tcpClient = null;
+                            }
+
+                        }
+                    }
+                    else if (client.MachineType == "RS232")
+                    {
+                        try
+                        {
+                            if (client.MachineObject != null)
+                            {
+                                SerialPort _SerialPort = (SerialPort)client.MachineObject;
+                                log.Info("Closed RS232: " + _SerialPort.ToString());
+                                _SerialPort.Close();
+                                _SerialPort = null;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Info("ERROR: Close RS232: " + client.MachineName + " | " + client.MachineCOM + " " + client.MachineBaudrate + " " + ex.Message);
+                        }
+
+                    }
+                }
+
+                listMachineData.Clear();
+                log.Info("Clear all listMachineData list");
+                dataGridView1.DataSource = null;
+            }
+            catch (Exception ex)
+            {
+                log.Info("Error StopConnection: " + ex.Message);
+            }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            Process.Start("notepad.exe", "logs/log.log");
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            OpenUrl(HOSTNAME + "/openclinic/app/logs/eqpdata.txt");
+        }
+
+        private void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch
+            {
+                // hack because of this: https://github.com/dotnet/corefx/issues/10361
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    url = url.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", url);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 }

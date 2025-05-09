@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-  <version>2.0.21</version>
-  <url>https://vnem.com/app/download/OpenClinicDataCollection.zip</url>
-  <changelog>https://vnem.com/app/download</changelog>
+  <version>2.0.29</version>
+  <url>https://tamduc.vnem.com//openclinic/app/download/update.zip</url>
+  <changelog>https://tamduc.vnem.com//openclinic/app/download/changelog.html</changelog>
   <mandatory>false</mandatory>
 </item>

@@ -35,6 +35,8 @@ using Newtonsoft.Json;
 using static System.Data.Entity.Infrastructure.Design.Executor;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using static OpenClinicDataCollection.frmPreview;
+using System.Xml.Linq;
 
 namespace HL7.Dotnetcore
 {
@@ -411,10 +413,49 @@ namespace HL7.Dotnetcore
                 {
                     try
                     {
+                        string baudrate = client.MachineBaudrate;
+                        string valueParity = "0";
+                        //MachineBaudrate = 9600,0,8,1
+                        //public enum Parity => None = 0,Odd = 1,Even = 2,Mark = 3,Space = 4
+                        //public enum StopBits => None = 0,One = 1,Two = 2,OnePointFive = 3
+                        //public enum databits => 5->8
+                        string databits = "8";
+                        string stopBit = "1";
+                        //None = 0,One = 1,Two = 2,OnePointFive = 3,
+                        string[] tmp2 = client.MachineBaudrate.Split(",");
+                        if (tmp2.Length > 4)
+                        {
+                            baudrate = tmp2[0];
+                            valueParity = tmp2[1];
+                            databits = tmp2[2];
+                            stopBit = tmp2[3];
+                        }
+                        if (Convert.ToInt16(stopBit) < 0 || Convert.ToInt16(stopBit) > 3)
+                        {
+                            stopBit = "1"; // One
+                        }
+                        if (Convert.ToInt16(valueParity) < 0 || Convert.ToInt16(valueParity) > 4)
+                        {
+                            valueParity = "0"; // None
+                        }
+                        if (Convert.ToInt16(databits) < 5 || Convert.ToInt16(databits) > 8)
+                        {
+                            databits = "8"; // 8
+                        }
+                        addLog("Connect param: baudrate=" + baudrate + " databits=" + databits);
+                        addLog("Parity(None = 0,Odd = 1,Even = 2,Mark = 3,Space = 4)=" + valueParity);
+                        addLog("StopBit(None = 0,One = 1,Two = 2,OnePointFive = 3)=" + stopBit);
+                        //SerialPort _serialPort = new SerialPort(
+                        //        client.MachineCOM,
+                        //        Convert.ToInt32(client.MachineBaudrate),
+                        //        Parity.None, 8, StopBits.One);
                         SerialPort _serialPort = new SerialPort(
                                 client.MachineCOM,
-                                Convert.ToInt32(client.MachineBaudrate),
-                                Parity.None, 8, StopBits.One);
+                                Convert.ToInt32(baudrate),
+                                (Parity)Convert.ToInt16(valueParity),
+                                Convert.ToInt16(databits),
+                                (StopBits)Convert.ToInt16(stopBit));
+
                         client.StringData = "";
                         _serialPort.DataReceived += _serialPort_DataReceived;
                         //_serialPort.ErrorReceived += _serialPort_ErrorReceived; ;
@@ -691,14 +732,15 @@ namespace HL7.Dotnetcore
                             log.Debug("Recv FF");
                             return;
                         }
-                        data.ToList().ForEach(b => {
-                            addLog("Recv " );
+                        data.ToList().ForEach(b =>
+                        {
+                            addLog("Recv ");
                         });
                         string hex = BitConverter.ToString(data);
                         addLog("Recv " + hex.Replace("-", " 0x"));
                         bool isStop = false;
 
-                        
+
                         if (data[data.Length - 1] == 0x04)
                         {
                             addLog("STOP RECV");
@@ -710,7 +752,7 @@ namespace HL7.Dotnetcore
                             client.DataEndLine = "CONTROL";
                         }
                         string line = System.Text.Encoding.ASCII.GetString(data);
-                        addLog("" + line + " hex=" + hex.Replace("-", " 0x") +" Num="+ _serialPort.BytesToRead);
+                        addLog("" + line + " hex=" + hex.Replace("-", " 0x") + " Num=" + _serialPort.BytesToRead);
                         client.StringData += line;
                         if (client.DataEndLine == null)
                         {
@@ -778,7 +820,7 @@ namespace HL7.Dotnetcore
                     {
                         JObject o1 = JObject.Parse(resultText);
                         addLog("    >>>> equipment_data: " + o1["equipment_data"]);
-                        JObject parse_data = (JObject )o1["parse_data"];
+                        JObject parse_data = (JObject)o1["parse_data"];
                         JObject result_data = (JObject)parse_data["result"];
                         JArray xetnghiem = (JArray)result_data["xetnghiem"];
                         if (xetnghiem.Count == 0)
@@ -790,7 +832,7 @@ namespace HL7.Dotnetcore
                                 string MA_CHI_SO = (string)obj.GetValue("MA_CHI_SO");
                                 string TEN_CHI_SO = (string)obj.GetValue("TEN_CHI_SO");
                                 string VALUE = (string)obj.GetValue("VALUE");
-                                addLog("         >>>> " + MA_CHI_SO +" ["+ TEN_CHI_SO + "] "+ VALUE);
+                                addLog("         >>>> " + MA_CHI_SO + " [" + TEN_CHI_SO + "] " + VALUE);
                             }
                         }
                         else
@@ -802,7 +844,7 @@ namespace HL7.Dotnetcore
                             }
                         }
 
-                            addLog("    >>>> equipment_data: " + o1["equipment_data"]);
+                        addLog("    >>>> equipment_data: " + o1["equipment_data"]);
                         addLog(">>>> Post data done to : " + machineCode + " " + machineName + " Length: " + resultText.Length);
                         return true;
                     }
@@ -1333,6 +1375,32 @@ namespace HL7.Dotnetcore
                 {
                     throw;
                 }
+            }
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("//MachineBaudrate = 9600,0,8,1\r\n//public enum Parity => None = 0,Odd = 1,Even = 2,Mark = 3,Space = 4\r\n//public enum StopBits => None = 0,One = 1,Two = 2,OnePointFive = 3\r\n//public enum databits => 5->8\r\n");
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            using (var connection = new SQLiteConnection("Data Source=hello.db"))
+            {
+                connection.Open();
+                try
+                {
+                    var command = connection.CreateCommand();
+                    command.CommandText = @"delete from machine_data";
+                    command.ExecuteNonQuery();
+                    log.Info("Clear db done");
+                }
+                catch (Exception ex)
+                {
+                    log.Info(ex.Message);
+                }
+
+                connection.Close();
             }
         }
     }

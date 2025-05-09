@@ -46,6 +46,7 @@
             panel4 = new Panel();
             dataGridView1 = new DataGridView();
             panel3 = new Panel();
+            button10 = new Button();
             button9 = new Button();
             button8 = new Button();
             button7 = new Button();
@@ -58,6 +59,7 @@
             txtClinicID = new TextBox();
             label1 = new Label();
             tabControl1 = new TabControl();
+            button11 = new Button();
             panel1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage1.SuspendLayout();
@@ -73,7 +75,7 @@
             // button1
             // 
             button1.Location = new Point(8, 121);
-            button1.Margin = new Padding(1, 1, 1, 1);
+            button1.Margin = new Padding(1);
             button1.Name = "button1";
             button1.Size = new Size(74, 25);
             button1.TabIndex = 1;
@@ -84,7 +86,7 @@
             // button2
             // 
             button2.Location = new Point(8, 47);
-            button2.Margin = new Padding(1, 1, 1, 1);
+            button2.Margin = new Padding(1);
             button2.Name = "button2";
             button2.Size = new Size(74, 25);
             button2.TabIndex = 2;
@@ -95,7 +97,7 @@
             // button3
             // 
             button3.Location = new Point(8, 89);
-            button3.Margin = new Padding(1, 1, 1, 1);
+            button3.Margin = new Padding(1);
             button3.Name = "button3";
             button3.Size = new Size(74, 25);
             button3.TabIndex = 3;
@@ -106,7 +108,7 @@
             // button4
             // 
             button4.Location = new Point(8, 13);
-            button4.Margin = new Padding(1, 1, 1, 1);
+            button4.Margin = new Padding(1);
             button4.Name = "button4";
             button4.Size = new Size(74, 25);
             button4.TabIndex = 5;
@@ -127,7 +129,7 @@
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button1);
             panel1.Location = new Point(734, 6);
-            panel1.Margin = new Padding(1, 1, 1, 1);
+            panel1.Margin = new Padding(1);
             panel1.Name = "panel1";
             panel1.Size = new Size(93, 229);
             panel1.TabIndex = 6;
@@ -135,7 +137,7 @@
             // button5
             // 
             button5.Location = new Point(8, 177);
-            button5.Margin = new Padding(1, 1, 1, 1);
+            button5.Margin = new Padding(1);
             button5.Name = "button5";
             button5.Size = new Size(74, 25);
             button5.TabIndex = 6;
@@ -147,9 +149,9 @@
             // 
             tabPage2.Controls.Add(listBox1);
             tabPage2.Location = new Point(4, 24);
-            tabPage2.Margin = new Padding(1, 1, 1, 1);
+            tabPage2.Margin = new Padding(1);
             tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(1, 1, 1, 1);
+            tabPage2.Padding = new Padding(1);
             tabPage2.Size = new Size(705, 282);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Console";
@@ -162,7 +164,7 @@
             listBox1.HorizontalScrollbar = true;
             listBox1.ItemHeight = 15;
             listBox1.Location = new Point(1, 1);
-            listBox1.Margin = new Padding(1, 1, 1, 1);
+            listBox1.Margin = new Padding(1);
             listBox1.Name = "listBox1";
             listBox1.ScrollAlwaysVisible = true;
             listBox1.Size = new Size(703, 280);
@@ -173,9 +175,9 @@
             tabPage1.Controls.Add(panel2);
             tabPage1.Controls.Add(dataGridView2);
             tabPage1.Location = new Point(4, 24);
-            tabPage1.Margin = new Padding(1, 1, 1, 1);
+            tabPage1.Margin = new Padding(1);
             tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(1, 1, 1, 1);
+            tabPage1.Padding = new Padding(1);
             tabPage1.Size = new Size(705, 282);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Data";
@@ -183,10 +185,11 @@
             // 
             // panel2
             // 
+            panel2.Controls.Add(button11);
             panel2.Controls.Add(button6);
             panel2.Dock = DockStyle.Bottom;
             panel2.Location = new Point(1, 232);
-            panel2.Margin = new Padding(1, 1, 1, 1);
+            panel2.Margin = new Padding(1);
             panel2.Name = "panel2";
             panel2.Size = new Size(703, 49);
             panel2.TabIndex = 6;
@@ -194,7 +197,7 @@
             // button6
             // 
             button6.Location = new Point(592, 12);
-            button6.Margin = new Padding(1, 1, 1, 1);
+            button6.Margin = new Padding(1);
             button6.Name = "button6";
             button6.Size = new Size(113, 25);
             button6.TabIndex = 7;
@@ -207,7 +210,7 @@
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Dock = DockStyle.Fill;
             dataGridView2.Location = new Point(1, 1);
-            dataGridView2.Margin = new Padding(1, 1, 1, 1);
+            dataGridView2.Margin = new Padding(1);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.RowHeadersWidth = 72;
             dataGridView2.RowTemplate.Height = 37;
@@ -223,9 +226,9 @@
             tabPage3.Controls.Add(panel4);
             tabPage3.Controls.Add(panel3);
             tabPage3.Location = new Point(4, 24);
-            tabPage3.Margin = new Padding(2, 2, 2, 2);
+            tabPage3.Margin = new Padding(2);
             tabPage3.Name = "tabPage3";
-            tabPage3.Padding = new Padding(2, 2, 2, 2);
+            tabPage3.Padding = new Padding(2);
             tabPage3.Size = new Size(705, 282);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Machines";
@@ -236,7 +239,7 @@
             panel4.Controls.Add(dataGridView1);
             panel4.Dock = DockStyle.Fill;
             panel4.Location = new Point(2, 73);
-            panel4.Margin = new Padding(2, 2, 2, 2);
+            panel4.Margin = new Padding(2);
             panel4.Name = "panel4";
             panel4.Size = new Size(701, 207);
             panel4.TabIndex = 6;
@@ -246,7 +249,7 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Dock = DockStyle.Fill;
             dataGridView1.Location = new Point(0, 0);
-            dataGridView1.Margin = new Padding(1, 1, 1, 1);
+            dataGridView1.Margin = new Padding(1);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 72;
             dataGridView1.RowTemplate.Height = 37;
@@ -259,6 +262,7 @@
             // 
             // panel3
             // 
+            panel3.Controls.Add(button10);
             panel3.Controls.Add(button9);
             panel3.Controls.Add(button8);
             panel3.Controls.Add(button7);
@@ -272,15 +276,25 @@
             panel3.Controls.Add(label1);
             panel3.Dock = DockStyle.Top;
             panel3.Location = new Point(2, 2);
-            panel3.Margin = new Padding(2, 2, 2, 2);
+            panel3.Margin = new Padding(2);
             panel3.Name = "panel3";
             panel3.Size = new Size(701, 71);
             panel3.TabIndex = 5;
             // 
+            // button10
+            // 
+            button10.Location = new Point(549, 37);
+            button10.Name = "button10";
+            button10.Size = new Size(42, 21);
+            button10.TabIndex = 19;
+            button10.Text = "Help";
+            button10.UseVisualStyleBackColor = true;
+            button10.Click += button10_Click;
+            // 
             // button9
             // 
             button9.Location = new Point(596, 34);
-            button9.Margin = new Padding(2, 2, 2, 2);
+            button9.Margin = new Padding(2);
             button9.Name = "button9";
             button9.Size = new Size(105, 26);
             button9.TabIndex = 18;
@@ -291,7 +305,7 @@
             // button8
             // 
             button8.Location = new Point(596, 4);
-            button8.Margin = new Padding(2, 2, 2, 2);
+            button8.Margin = new Padding(2);
             button8.Name = "button8";
             button8.Size = new Size(105, 26);
             button8.TabIndex = 17;
@@ -302,7 +316,7 @@
             // button7
             // 
             button7.Location = new Point(416, 4);
-            button7.Margin = new Padding(2, 2, 2, 2);
+            button7.Margin = new Padding(2);
             button7.Name = "button7";
             button7.Size = new Size(105, 61);
             button7.TabIndex = 16;
@@ -313,7 +327,7 @@
             // txtAPIURL
             // 
             txtAPIURL.Location = new Point(106, 46);
-            txtAPIURL.Margin = new Padding(2, 2, 2, 2);
+            txtAPIURL.Margin = new Padding(2);
             txtAPIURL.MaxLength = 2000;
             txtAPIURL.Name = "txtAPIURL";
             txtAPIURL.Size = new Size(307, 23);
@@ -333,7 +347,7 @@
             // txtHost
             // 
             txtHost.Location = new Point(106, 25);
-            txtHost.Margin = new Padding(2, 2, 2, 2);
+            txtHost.Margin = new Padding(2);
             txtHost.MaxLength = 200;
             txtHost.Name = "txtHost";
             txtHost.Size = new Size(307, 23);
@@ -353,7 +367,7 @@
             // txtAppID
             // 
             txtAppID.Location = new Point(285, 4);
-            txtAppID.Margin = new Padding(2, 2, 2, 2);
+            txtAppID.Margin = new Padding(2);
             txtAppID.MaxLength = 2;
             txtAppID.Name = "txtAppID";
             txtAppID.Size = new Size(129, 23);
@@ -374,7 +388,7 @@
             // txtClinicID
             // 
             txtClinicID.Location = new Point(106, 2);
-            txtClinicID.Margin = new Padding(2, 2, 2, 2);
+            txtClinicID.Margin = new Padding(2);
             txtClinicID.MaxLength = 2;
             txtClinicID.Name = "txtClinicID";
             txtClinicID.Size = new Size(74, 23);
@@ -398,11 +412,22 @@
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Location = new Point(8, 6);
-            tabControl1.Margin = new Padding(1, 1, 1, 1);
+            tabControl1.Margin = new Padding(1);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(713, 310);
             tabControl1.TabIndex = 0;
+            // 
+            // button11
+            // 
+            button11.Location = new Point(477, 12);
+            button11.Margin = new Padding(1);
+            button11.Name = "button11";
+            button11.Size = new Size(113, 25);
+            button11.TabIndex = 8;
+            button11.Text = "Clear DB";
+            button11.UseVisualStyleBackColor = true;
+            button11.Click += button11_Click;
             // 
             // FormMain
             // 
@@ -411,7 +436,7 @@
             ClientSize = new Size(719, 323);
             Controls.Add(tabControl1);
             Controls.Add(panel1);
-            Margin = new Padding(1, 1, 1, 1);
+            Margin = new Padding(1);
             MaximizeBox = false;
             Name = "FormMain";
             Text = "OpenClinic Data Collection 2.1";
@@ -462,5 +487,7 @@
         private Button button7;
         private Button button8;
         private Button button9;
+        private Button button10;
+        private Button button11;
     }
 }

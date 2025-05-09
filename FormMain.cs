@@ -408,6 +408,7 @@ namespace HL7.Dotnetcore
                     });
                     client.thread = thread;
                     thread.Start();
+
                 }
                 else if (client.MachineType == "RS232")
                 {
@@ -423,7 +424,7 @@ namespace HL7.Dotnetcore
                         string stopBit = "1";
                         //None = 0,One = 1,Two = 2,OnePointFive = 3,
                         string[] tmp2 = client.MachineBaudrate.Split(",");
-                        if (tmp2.Length > 4)
+                        if (tmp2.Length >= 4)
                         {
                             baudrate = tmp2[0];
                             valueParity = tmp2[1];
@@ -732,18 +733,22 @@ namespace HL7.Dotnetcore
                             log.Debug("Recv FF");
                             return;
                         }
-                        data.ToList().ForEach(b =>
-                        {
-                            addLog("Recv ");
-                        });
+                        //data.ToList().ForEach(b =>
+                        //{
+                        //    addLog("Recv " + b.ToString());
+                        //});
                         string hex = BitConverter.ToString(data);
-                        addLog("Recv " + hex.Replace("-", " 0x"));
+                        addLog("Recv " + data.Length + " bytes. [" + hex.Replace("-", " ") + "]");
                         bool isStop = false;
-
+                        if (data[data.Length - 1] == 0x00)
+                        {
+                            addLog("STOP RECV 0x00");
+                            isStop = true;
+                        }
 
                         if (data[data.Length - 1] == 0x04)
                         {
-                            addLog("STOP RECV");
+                            addLog("STOP RECV 0x04");
                             isStop = true;
                         }
                         if (data[data.Length - 1] == 0x05)
@@ -752,14 +757,15 @@ namespace HL7.Dotnetcore
                             client.DataEndLine = "CONTROL";
                         }
                         string line = System.Text.Encoding.ASCII.GetString(data);
-                        addLog("" + line + " hex=" + hex.Replace("-", " 0x") + " Num=" + _serialPort.BytesToRead);
+                        addLog("Recv ASCII: " + line);
                         client.StringData += line;
                         if (client.DataEndLine == null)
                         {
                             // Default
                             client.DataEndLine = "GLU";
                         }
-                        if (line.Contains(client.DataEndLine) == true
+                        if (
+                            (client.DataEndLine.Trim().Length >= 3 && line.Contains(client.DataEndLine) == true)
                             || isStop == true)
                         {
                             addLog(" " + client.StringData);
@@ -907,6 +913,7 @@ namespace HL7.Dotnetcore
                 //
                 StartApplication();
                 //
+
             }
             catch (Exception ex)
             {
@@ -1402,6 +1409,51 @@ namespace HL7.Dotnetcore
 
                 connection.Close();
             }
+        }
+
+        private async void button12_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string filePath = "logs/log.log";
+                string uploadUrl = PostURL + "?f=uploadlog";
+                await Upload(uploadUrl, filePath);
+                MessageBox.Show("Upload done");
+            }
+            catch (Exception ee)
+            {
+                log.Error(ee);
+            }
+        }
+
+        //private async Task<System.IO.Stream> Upload(string actionUrl, string paramString, Stream paramFileStream, byte[] paramFileBytes)
+        private async Task<System.IO.Stream> Upload(string actionUrl, string filePath)
+        {
+            try
+            {
+                //HttpContent stringContent = new StringContent(paramString);
+                //HttpContent fileStreamContent = new StreamContent(paramFileStream);
+                HttpContent fileStreamContent = new StreamContent(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+                //HttpContent bytesContent = new ByteArrayContent(File.ReadAllBytes(filePath));
+                using (var client = new HttpClient())
+                using (var formData = new MultipartFormDataContent())
+                {
+                    //formData.Add(stringContent, "param1", "param1");
+                    formData.Add(fileStreamContent, "fileToUpload", "log");
+                    //formData.Add(bytesContent, "fileToUpload", "log");
+                    var response = await client.PostAsync(actionUrl, formData);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return null;
+                    }
+                    return await response.Content.ReadAsStreamAsync();
+                }
+            }
+            catch (Exception eee)
+            {
+                log.Error(eee);
+            }
+            return null;
         }
     }
 }

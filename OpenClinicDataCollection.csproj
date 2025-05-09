@@ -6,12 +6,30 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyVersion>2.0.31.0</AssemblyVersion>
+    <AssemblyVersion>2.0.36.0</AssemblyVersion>
     <FileVersion>2.0.31.0</FileVersion>
     <PackAsTool>False</PackAsTool>
     <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
-
+  
+  <Target Name="GetVersion" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+    <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+    </GetAssemblyIdentity>
+    <PropertyGroup>
+      <VersionInfo>%(AssemblyInfo.Version)</VersionInfo>
+    </PropertyGroup>
+    <Message Text="VersionInfo = $(VersionInfo)" Importance="high" />
+  </Target>
+  
+  <Target Name="ZipBuild" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+    <Message Text="ZipBuild_DEBUG ZIP File:" Importance="High" />
+    <Exec Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe Compress-Archive -Path '$(OutDir)\OpenClinicDataCollection.exe', '$(OutDir)OpenClinicDataCollection.dll' -DestinationPath '$(OutDir)\\OpenClinicDataCollection.zip' -Force" />
+  </Target>
+  <Target Name="Upload" AfterTargets="ZipBuild" Condition="'$(Configuration)'=='Release'">
+    <Message Text="Upload VersionInfo = $(VersionInfo)" Importance="high" />
+    <Exec Command="curl -F &quot;version=$(VersionInfo)&quot; -F &quot;file=@$(OutDir)OpenClinicDataCollection.zip&quot; https://nhantam.vnem.com/openclinic/softs/index.php" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Autoupdater.NET.Official" Version="1.8.3" />
@@ -25,7 +43,7 @@
 
   <ItemGroup>
     <None Update="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -1,9 +1,9 @@
 {
-  "APP_ID": "1",
+  "APP_ID": "5",
   "CLINIC_ID": "1",
-  "HOST": "https://huuphuoc.vnem.com",
+  "HOST": "https://nhantam.vnem.com",
   "URL": "/openclinic/app/equipment/index3.php",
-  "AUTOUPDATE": "/openclinic/app/download/update.xml",
+  "AUTOUPDATE": "/openclinic/softs/update.xml",
   "ISLOCAL": false,
   "LIST": [
   ]
